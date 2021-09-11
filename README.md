@@ -4,7 +4,7 @@
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/tighten/solana-php-sdk/run-tests?label=tests)](https://github.com/tighten/solana-php-sdk/actions?query=workflow%3Arun-tests+branch%3Amaster)
 
 
-Short description here, and maybe small justification of why it's valuable.
+Simple PHP SDK for Solana.
 
 ## Installation
 
@@ -16,9 +16,44 @@ composer require tightenco/solana-php-sdk
 
 ## Usage
 
+### Using the Solana simple client
+
+You can use the `Solana` class for convenient access to API methods. Some are defined in the code:
+
+```php
+use Tighten\SolanaPhpSdk\Solana;
+use Tighten\SolanaPhpSdk\SolanaRpcClient;
+
+// Using a defined method
+$sdk = new Solana(new SolanaRpcClient(SolanaRpcClient::MAINNET_ENDPOINT));
+$accountInfo = $sdk->getAccountInfo('4fYNw3dojWmQ4dXtSGE9epjRGy9pFSx62YypT7avPYvA');
+var_dump($accountInfo);
 ```
-// Usage code and examples here
+
+Anything not defined in the code, you can call yourself, with only a few modifications to your code:
+
+```php
+use Tighten\SolanaPhpSdk\Solana;
+use Tighten\SolanaPhpSdk\SolanaRpcClient;
+
+// Using a not-defined method using the __call passthrough
+$response = $sdk->whateverMethodYouWantHere([$param1, $param2]);
 ```
+
+For all the possible methods, see the [API documentation](https://docs.solana.com/developing/clients/jsonrpc-api).
+
+### Directly using the RPC client
+
+The `Solana` class is just a light convenience layer on top of the RPC client. You can, if you want, use the client directly, which allows you to work with the full `Response` object:
+
+```php
+use Tighten\SolanaPhpSdk\SolanaRpcClient;
+
+$client = new SolanaRpcClient(SolanaRpcClient::MAINNET_ENDPOINT);
+$accountInfoResponse = $client->call('getAccountInfo', ['4fYNw3dojWmQ4dXtSGE9epjRGy9pFSx62YypT7avPYvA']);
+$accountInfoBody = $accountInfoResponse->json();
+$accountInfoStatusCode = $accountInfoResponse->getStatusCode();
+``````
 
 ## Testing
 
