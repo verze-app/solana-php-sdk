@@ -34,7 +34,7 @@ class Solana
         return $this->client->call('getTransaction', [$transactionSignature])['result'];
     }
 
-    public function __call($method, array $params = []): Response
+    public function __call($method, array $params = []): ?array
     {
         return $this->client->call($method, $params)->json();
     }

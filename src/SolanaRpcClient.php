@@ -38,7 +38,7 @@ class SolanaRpcClient
         return $response;
     }
 
-    protected function buildRpc(string $method, array $params): array
+    public function buildRpc(string $method, array $params): array
     {
         return [
             'jsonrpc' => '2.0',
