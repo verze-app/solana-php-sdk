@@ -18,7 +18,7 @@ class Solana
         return $this->client->call('getAccountInfo', [$pubKey])->json()['result']['value'];
     }
 
-    public function getBalance(string $pubKey): Float
+    public function getBalance(string $pubKey): float
     {
         return $this->client->call('getBalance', [$pubKey])['result']['value'];
     }
