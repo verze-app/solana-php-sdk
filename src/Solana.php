@@ -28,6 +28,42 @@ class Solana
         return $this->client->call('getConfirmedTransaction', [$transactionSignature])['result'];
     }
 
+    public function getProgramAccounts(string $pubKey)
+    {
+        $probablyMetaPlexKey = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'; // 🤷‍♂️
+        $magicOffsetNumber = 326; // 🤷‍♂️
+
+        return $this->client->call('getProgramAccounts', [
+            $probablyMetaPlexKey,
+            [
+                'encoding' => 'base64',
+                'filters' => [
+                    [
+                        'memcmp' => [
+                            'bytes' => $pubKey,
+                            'offset' => $magicOffsetNumber,
+                        ],
+                    ],
+                ],
+            ],
+        ])->json();
+    }
+
+    public function getTokenAccountsByOwner(string $pubKey)
+    {
+        $solanaTokenProgramId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+
+        return $this->client->call('getTokenAccountsByOwner', [
+            $pubKey,
+            [
+                'programId' => $solanaTokenProgramId,
+            ],
+            [
+                'encoding' => 'jsonParsed',
+            ],
+        ])['result']['value'];
+    }
+
     // NEW: This method is only available in solana-core v1.7 or newer. Please use getConfirmedTransaction for solana-core v1.6
     public function getTransaction(string $transactionSignature): array
     {
