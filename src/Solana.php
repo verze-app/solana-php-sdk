@@ -2,10 +2,11 @@
 
 namespace Tighten\SolanaPhpSdk;
 
-use Illuminate\Http\Client\Response;
-
 class Solana
 {
+    public const solanaTokenProgramId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+    public const metaplexPublicKey = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s';
+
     protected $client;
 
     public function __construct(SolanaRpcClient $client)
@@ -30,11 +31,10 @@ class Solana
 
     public function getProgramAccounts(string $pubKey)
     {
-        $probablyMetaPlexKey = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'; // 🤷‍♂️
         $magicOffsetNumber = 326; // 🤷‍♂️
 
         return $this->client->call('getProgramAccounts', [
-            $probablyMetaPlexKey,
+            self::metaplexPublicKey,
             [
                 'encoding' => 'base64',
                 'filters' => [
@@ -51,12 +51,10 @@ class Solana
 
     public function getTokenAccountsByOwner(string $pubKey)
     {
-        $solanaTokenProgramId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
-
         return $this->client->call('getTokenAccountsByOwner', [
             $pubKey,
             [
-                'programId' => $solanaTokenProgramId,
+                'programId' => self::solanaTokenProgramId,
             ],
             [
                 'encoding' => 'jsonParsed',
