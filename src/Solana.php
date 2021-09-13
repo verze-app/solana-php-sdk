@@ -14,7 +14,7 @@ class Solana
         $this->client = $client;
     }
 
-    public function getAccountInfo(string $pubKey): array
+    public function getAccountInfo(string $pubKey): ?array
     {
         return $this->client->call('getAccountInfo', [$pubKey])->json()['result']['value'];
     }
