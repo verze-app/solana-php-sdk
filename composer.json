@@ -22,7 +22,8 @@
     ],
     "require": {
         "php": "^7.4 || ~8.0",
-        "illuminate/http": "~8.0"
+        "illuminate/http": "~8.0",
+        "stephenhill/base58": "^1.1"
     },
     "require-dev": {
         "mockery/mockery": "^1.4",
