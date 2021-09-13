@@ -16,7 +16,7 @@ class Solana
 
     public function getAccountInfo(string $pubKey): ?array
     {
-        return $this->client->call('getAccountInfo', [$pubKey])->json()['result']['value'];
+        return $this->client->call('getAccountInfo', [$pubKey, ["encoding" => "jsonParsed"]])->json()['result']['value'];
     }
 
     public function getBalance(string $pubKey): float
