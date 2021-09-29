@@ -2,6 +2,8 @@
 
 namespace Tighten\SolanaPhpSdk;
 
+use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
+
 class Solana
 {
     public const solanaTokenProgramId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
@@ -16,7 +18,13 @@ class Solana
 
     public function getAccountInfo(string $pubKey): array
     {
-        return $this->client->call('getAccountInfo', [$pubKey, ["encoding" => "jsonParsed"]])->json()['result']['value'];
+        $accountResponse = $this->client->call('getAccountInfo', [$pubKey, ["encoding" => "jsonParsed"]])->json()['result']['value'];
+
+        if (! $accountResponse) {
+            throw new AccountNotFoundException("API Error: Account {$pubKey} not found.");
+        }
+
+        return $accountResponse;
     }
 
     public function getBalance(string $pubKey): float
