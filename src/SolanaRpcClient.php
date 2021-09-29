@@ -17,13 +17,15 @@ class SolanaRpcClient
     public const TESTNET_ENDPOINT = 'https://api.testnet.solana.com';
     public const MAINNET_ENDPOINT = 'https://api.mainnet-beta.solana.com';
 
+    public static $randomKeyOverrideForUnitTetsing = null;
+
     protected $endpoint;
     protected $randomKey;
 
     public function __construct(string $endpoint)
     {
         $this->endpoint = $endpoint;
-        $this->randomKey = random_int(5, 25000);
+        $this->randomKey = static::$randomKeyOverrideForUnitTetsing ?? random_int(5, 25000);
     }
 
     public function call(string $method, array $params = []): Response

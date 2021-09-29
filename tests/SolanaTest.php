@@ -3,8 +3,9 @@
 namespace Tighten\SolanaPhpSdk\Tests;
 
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
 use Mockery as M;
-use PHPUnit\Framework\TestCase;
+use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
 use Tighten\SolanaPhpSdk\Solana;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
 
@@ -25,6 +26,29 @@ class SolanaTest extends TestCase
         M::close();
 
         $this->assertTrue(true); // Keep PHPUnit from squawking; there must be a better way?
+    }
+
+    /** @test */
+    public function it_will_throw_exception_when_rpc_account_response_is_null()
+    {
+        Http::fake([
+            SolanaRpcClient::DEVNET_ENDPOINT => Http::response([
+                'jsonrpc' => '2.0',
+                'result' => [
+                    'context' =>  [
+                        'slot' => 6440
+                    ],
+                    'value' => null, // no account data.
+                ],
+                'id' => 4051,
+            ]),
+        ]);
+
+        SolanaRpcClient::$randomKeyOverrideForUnitTetsing = 4051;
+        $solana = new Solana(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
+
+        $this->expectException(AccountNotFoundException::class);
+        $solana->getAccountInfo('abc123');
     }
 
     protected function fakeResponse(): Response
