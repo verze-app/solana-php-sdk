@@ -44,7 +44,7 @@ class SolanaRpcClient
     public function __construct(string $endpoint)
     {
         $this->endpoint = $endpoint;
-        $this->randomKey = random_int(-999999, 999999);
+        $this->randomKey = random_int(0, 99999999);
     }
 
     /**
