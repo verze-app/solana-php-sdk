@@ -35,6 +35,8 @@ class SolanaRpcClient
     // Reserved for implementation-defined server-errors.
     // -32000 to -32099 is server error - no const.
 
+    public static $randomKeyOverrideForUnitTetsing = null;
+
     protected $endpoint;
     protected $randomKey;
 
@@ -45,7 +47,7 @@ class SolanaRpcClient
     public function __construct(string $endpoint)
     {
         $this->endpoint = $endpoint;
-        $this->randomKey = random_int(0, 99999999);
+        $this->randomKey = static::$randomKeyOverrideForUnitTetsing ?? random_int(0, 99999999);
     }
 
     /**

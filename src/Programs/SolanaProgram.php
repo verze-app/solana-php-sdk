@@ -2,6 +2,7 @@
 
 namespace Tighten\SolanaPhpSdk\Programs;
 
+use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
 use Tighten\SolanaPhpSdk\Program;
 
 class SolanaProgram extends Program
@@ -20,7 +21,13 @@ class SolanaProgram extends Program
      */
     public function getAccountInfo(string $pubKey): array
     {
-        return $this->client->call('getAccountInfo', [$pubKey, ["encoding" => "jsonParsed"]])['value'];
+        $accountResponse = $this->client->call('getAccountInfo', [$pubKey, ["encoding" => "jsonParsed"]])['value'];
+
+        if (! $accountResponse) {
+            throw new AccountNotFoundException("API Error: Account {$pubKey} not found.");
+        }
+
+        return $accountResponse;
     }
 
     /**

@@ -9,13 +9,13 @@ class Program
      */
     protected SolanaRpcClient $client;
 
-    public function __construct($client)
+    public function __construct(SolanaRpcClient $client)
     {
         $this->client = $client;
     }
 
-    public function __call($method, array $params = []): ?array
+    public function __call($method, $params = []): ?array
     {
-        return $this->client->call($method, $params)->json();
+        return $this->client->call($method, ...$params);
     }
 }

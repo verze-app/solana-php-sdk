@@ -2,10 +2,12 @@
 
 namespace Tighten\SolanaPhpSdk\Tests;
 
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
 use Mockery as M;
-use PHPUnit\Framework\TestCase;
-use Tighten\SolanaPhpSdk\Solana;
+use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
+use Tighten\SolanaPhpSdk\Programs\SolanaProgram;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
 
 class SolanaTest extends TestCase
@@ -13,28 +15,48 @@ class SolanaTest extends TestCase
     /** @test */
     public function it_passes_undefined_calls_through_magically()
     {
-        $client = M::mock(SolanaRpcClient::class);
-        $client->shouldReceive('call')
-            ->with('abcdefg', [])
-            ->times(1)
-            ->andReturn($this->fakeResponse());
+        Http::fake([
+            SolanaRpcClient::DEVNET_ENDPOINT => Http::response([
+                'jsonrpc' => '2.0',
+                'result' => [], // not important
+                'id' => 4051,
+            ]),
+        ]);
 
-        $solana = new Solana($client);
-        $solana->abcdefg();
+        SolanaRpcClient::$randomKeyOverrideForUnitTetsing = 4051;
 
-        M::close();
+        $solana = new SolanaProgram(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
+        $solana->abcdefg([
+            'param1' => 123,
+        ]);
 
-        $this->assertTrue(true); // Keep PHPUnit from squawking; there must be a better way?
+        Http::assertSent(function (Request $request) {
+            return $request->url() == SolanaRpcClient::DEVNET_ENDPOINT &&
+                $request['method'] == 'abcdefg' &&
+                $request['params'] == ['param1' => 123];
+        });
     }
 
-    protected function fakeResponse(): Response
+    /** @test */
+    public function it_will_throw_exception_when_rpc_account_response_is_null()
     {
-        return new Response(new class
-        {
-            public function getBody()
-            {
-                return 'i am a body yay';
-            }
-        });
+        Http::fake([
+            SolanaRpcClient::DEVNET_ENDPOINT => Http::response([
+                'jsonrpc' => '2.0',
+                'result' => [
+                    'context' =>  [
+                        'slot' => 6440
+                    ],
+                    'value' => null, // no account data.
+                ],
+                'id' => 4051,
+            ]),
+        ]);
+
+        SolanaRpcClient::$randomKeyOverrideForUnitTetsing = 4051;
+        $solana = new SolanaProgram(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
+
+        $this->expectException(AccountNotFoundException::class);
+        $solana->getAccountInfo('abc123');
     }
 }
