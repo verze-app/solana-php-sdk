@@ -5,10 +5,13 @@ namespace Tighten\SolanaPhpSdk;
 use Illuminate\Support\Arr;
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
 use Tighten\SolanaPhpSdk\Exceptions\TodoException;
+use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tuupola\Base58;
 
 class PublicKey
 {
+    const MAX_SEED_LENGTH = 32;
+
     /**
      * @var array|false
      */
@@ -78,6 +81,14 @@ class PublicKey
     }
 
     /**
+     * @return string
+     */
+    public function toBinaryString(): string
+    {
+        return Ed25519Keypair::array2bin($this->byteArray);
+    }
+
+    /**
      * Return the base-58 representation of the public key
      */
     public function __toString()
@@ -89,18 +100,76 @@ class PublicKey
      * Derive a public key from another key, a seed, and a program ID.
      * The program ID will also serve as the owner of the public key, giving
      * it permission to write data to the account.
+     *
+     * @param PublicKey $fromPublicKey
+     * @param string $seed
+     * @param PublicKey $programId
+     * @return PublicKey
      */
     public static function createWithSeed(PublicKey $fromPublicKey, string $seed, PublicKey $programId): PublicKey
     {
-        throw new TodoException("PublicKey@createWithSeed implementation is coming soon!");
+        $buffer = [];
+        array_push($buffer,
+            ...$fromPublicKey->toBytes(),
+            ...Ed25519Keypair::bin2array($seed),
+            ...$programId->toBytes()
+        );
+
+        $hash = hash('sha256', Ed25519Keypair::array2bin($buffer));
+        $binaryString = sodium_hex2bin($hash);
+        return new PublicKey(Ed25519Keypair::bin2array($binaryString));
     }
 
     /**
      * Derive a program address from seeds and a program ID.
+     *
+     * @param array<array<integer>> $seeds
+     * @param PublicKey $programId
+     * @return PublicKey
      */
     public static function createProgramAddress(array $seeds, PublicKey $programId): PublicKey
     {
-        throw new TodoException("PublicKey@createProgramAddress implementation is coming soon!");
+        $buffer = [];
+        foreach ($seeds as $seed) {
+            if (sizeof($seed) > self::MAX_SEED_LENGTH) {
+                throw new GenericException("Max seed length exceeded");
+            }
+            array_push($buffer, ...$seed);
+        }
+
+        array_push($buffer,
+            ...$programId->toBytes(),
+            ...Ed25519Keypair::bin2array('ProgramDerivedAddress')
+        );
+
+        $hash = hash('sha256', Ed25519Keypair::array2bin($buffer));
+        $binaryString = sodium_hex2bin($hash);
+        // TODO: check that we are on the curve?
+        return new PublicKey(Ed25519Keypair::bin2array($binaryString));
+    }
+
+    /**
+     * @param array $seeds
+     * @param PublicKey $programId
+     * @return array 2 elements, [0] = PublicKey, [1] = integer
+     */
+    static function findProgramAddress(array $seeds, PublicKey $programId): array
+    {
+        $nonce = 255;
+
+        while ($nonce != 0) {
+            try {
+                $copyOfSeedsWithNonce = $seeds;
+                array_push($copyOfSeedsWithNonce, [$nonce]);
+                $address = static::createProgramAddress($copyOfSeedsWithNonce, $programId);
+            } catch (\Exception $exception) {
+                $nonce--;
+                continue;
+            }
+            return [$address, $nonce];
+        }
+
+        throw new GenericException('Unable to find a viable program address nonce');
     }
 
     /**
@@ -116,7 +185,7 @@ class PublicKey
      *
      * @return Base58
      */
-    protected function base58(): Base58
+    public static function base58(): Base58
     {
         return new Base58(["characters" => Base58::BITCOIN]);
     }

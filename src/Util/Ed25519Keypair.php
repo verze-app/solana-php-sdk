@@ -46,10 +46,19 @@ class Ed25519Keypair
 
     /**
      * @param string $bin
-     * @return array|int[]
+     * @return array<integer>
      */
     public static function bin2array(string $bin): array
     {
         return array_map(fn($ch) => ord($ch), str_split($bin));
+    }
+
+    /**
+     * @param array $array
+     * @return string
+     */
+    public static function array2bin(array $array): string
+    {
+        return pack('C*', ...$array);
     }
 }

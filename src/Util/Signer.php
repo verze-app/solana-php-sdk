@@ -7,9 +7,9 @@ use Tighten\SolanaPhpSdk\PublicKey;
 class Signer
 {
     public PublicKey $publicKey;
-    public array $secretKey;
+    public string $secretKey;
 
-    public function __construct(PublicKey $publicKey, array $secretKey)
+    public function __construct(PublicKey $publicKey, string $secretKey)
     {
         $this->publicKey = $publicKey;
         $this->secretKey = $secretKey;

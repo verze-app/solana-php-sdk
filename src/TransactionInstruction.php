@@ -2,8 +2,13 @@
 
 namespace Tighten\SolanaPhpSdk;
 
+use Tighten\SolanaPhpSdk\Util\AccountMeta;
+
 class TransactionInstruction
 {
+    /**
+     * @var array<AccountMeta>
+     */
     public array $keys;
     public PublicKey $programId;
     public array $data;

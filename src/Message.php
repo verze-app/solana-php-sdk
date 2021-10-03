@@ -8,10 +8,16 @@ use Tighten\SolanaPhpSdk\Util\MessageHeader;
 
 class Message
 {
-    protected MessageHeader $header;
-    protected array $accountKeys;
-    protected string $recentBlockhash;
-    protected array $instructions;
+    public MessageHeader $header;
+    /**
+     * @var array<PublicKey>
+     */
+    public array $accountKeys;
+    public string $recentBlockhash;
+    /**
+     * @var array<CompiledInstruction>
+     */
+    public array $instructions;
 
     /**
      * int to PublicKey: https://github.com/solana-labs/solana-web3.js/blob/966d7c653198de193f607cdfe19a161420408df2/src/message.ts
@@ -22,29 +28,26 @@ class Message
 
     /**
      * @param MessageHeader $header
-     * @param array $accountKeys
+     * @param array<string> $accountKeys
      * @param string $recentBlockhash
-     * @param array $instructions
+     * @param array<CompiledInstruction> $instructions
      */
     public function __construct(
         MessageHeader $header,
-        array         $accountKeys, // string[]
+        array         $accountKeys,
         string        $recentBlockhash,
-        array         $instructions // CompiledInstruction[]
+        array         $instructions
     )
     {
         $this->header = $header;
         $this->accountKeys = array_map(function (string $accountKey) {
-            return new KeyPair($accountKey);
+            return new PublicKey($accountKey);
         }, $accountKeys);
         $this->recentBlockhash = $recentBlockhash;
         $this->instructions = $instructions;
 
         $this->indexToProgramIds = [];
-        /**
-         * @var CompiledInstruction $instruction
-         */
-        foreach ($instructions as $i => $instruction) {
+        foreach ($instructions as $instruction) {
             $this->indexToProgramIds[$instruction->programIdIndex] = $this->accountKeys[$instruction->programIdIndex];
         }
     }
@@ -96,10 +99,10 @@ class Message
     }
 
     /**
-     * @return array
+     * @return string
      * @throws TodoException
      */
-    public function serialize(): array
+    public function serialize(): string
     {
         throw new TodoException('Message@serialize is coming soon.');
     }

@@ -7,9 +7,9 @@ use Tighten\SolanaPhpSdk\PublicKey;
 class SignaturePubkeyPair
 {
     public PublicKey $publicKey;
-    public ?array $signature;
+    public ?string $signature;
 
-    public function __construct(PublicKey $publicKey, ?array $signature = null)
+    public function __construct(PublicKey $publicKey, ?string $signature = null)
     {
         $this->publicKey = $publicKey;
         $this->signature = $signature;

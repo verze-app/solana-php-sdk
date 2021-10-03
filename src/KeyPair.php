@@ -76,7 +76,7 @@ class KeyPair
     /**
      * The raw secret key for this keypair
      *
-     * @return string
+     * @return array
      */
     public function getSecretKey(): array
     {

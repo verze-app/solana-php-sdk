@@ -60,4 +60,16 @@ class KeyPairTest extends TestCase
 
         $this->assertEquals('2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1', $keyPair->getPublicKey()->toBase58());
     }
+
+    /** @test */
+    public function it_bin2array_and_array2bin_are_equivelant()
+    {
+        $keyPair = sodium_crypto_sign_keypair();
+        $publicKey = sodium_crypto_sign_publickey($keyPair);
+
+        $valueAsArray = Ed25519Keypair::bin2array($publicKey);
+        $valueAsString = Ed25519Keypair::array2bin($valueAsArray);
+
+        $this->assertEquals($publicKey, $valueAsString);
+    }
 }

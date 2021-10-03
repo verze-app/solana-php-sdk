@@ -5,12 +5,17 @@ namespace Tighten\SolanaPhpSdk\Util;
 class CompiledInstruction
 {
     public int $programIdIndex;
+    /**
+     * array of indexes.
+     *
+     * @var array<integer>
+     */
     public array $accounts;
     public string $data;
 
     public function __construct(
         int $programIdIndex,
-        array $accounts, // number[]
+        array $accounts,
         string $data
     )
     {
