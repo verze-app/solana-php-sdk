@@ -4,7 +4,7 @@ namespace Tighten\SolanaPhpSdk\Programs;
 
 use Tighten\SolanaPhpSdk\Program;
 
-class SolanaTokenProgram extends Program
+class SplTokenProgram extends Program
 {
     public const SOLANA_TOKEN_PROGRAM_ID = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
 

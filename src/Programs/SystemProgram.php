@@ -5,7 +5,7 @@ namespace Tighten\SolanaPhpSdk\Programs;
 use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
 use Tighten\SolanaPhpSdk\Program;
 
-class SolanaProgram extends Program
+class SystemProgram extends Program
 {
     /**
      * @param $client

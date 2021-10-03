@@ -1,0 +1,55 @@
+<?php
+
+namespace Tighten\SolanaPhpSdk\Util;
+
+class Ed25519Keypair
+{
+    public array $publicKey;
+    public array $secretKey;
+
+    /**
+     * @param array|string $publicKey
+     * @param array|string $secretKey
+     */
+    public function __construct($publicKey, $secretKey)
+    {
+        $this->publicKey = is_string($publicKey)
+            ? static::bin2array($publicKey)
+            : $publicKey;
+        $this->secretKey = is_string($secretKey)
+            ? static::bin2array($secretKey)
+            : $secretKey;
+    }
+
+    /**
+     * @throws \SodiumException
+     */
+    public static function generate(): Ed25519Keypair
+    {
+        return static::from(
+            sodium_crypto_sign_keypair()
+        );
+    }
+
+    /**
+     * @param $keyPair
+     * @return Ed25519Keypair
+     * @throws \SodiumException
+     */
+    public static function from($keyPair): Ed25519Keypair
+    {
+        return new static(
+            sodium_crypto_sign_publickey($keyPair),
+            sodium_crypto_sign_secretkey($keyPair)
+        );
+    }
+
+    /**
+     * @param string $bin
+     * @return array|int[]
+     */
+    public static function bin2array(string $bin): array
+    {
+        return array_map(fn($ch) => ord($ch), str_split($bin));
+    }
+}

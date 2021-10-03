@@ -7,7 +7,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Mockery as M;
 use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
-use Tighten\SolanaPhpSdk\Programs\SolanaProgram;
+use Tighten\SolanaPhpSdk\Programs\SystemProgram;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
 
 class SolanaTest extends TestCase
@@ -25,7 +25,7 @@ class SolanaTest extends TestCase
 
         SolanaRpcClient::$randomKeyOverrideForUnitTetsing = 4051;
 
-        $solana = new SolanaProgram(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
+        $solana = new SystemProgram(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
         $solana->abcdefg([
             'param1' => 123,
         ]);
@@ -54,7 +54,7 @@ class SolanaTest extends TestCase
         ]);
 
         SolanaRpcClient::$randomKeyOverrideForUnitTetsing = 4051;
-        $solana = new SolanaProgram(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
+        $solana = new SystemProgram(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
 
         $this->expectException(AccountNotFoundException::class);
         $solana->getAccountInfo('abc123');
