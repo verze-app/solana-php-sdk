@@ -9,22 +9,40 @@ use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tighten\SolanaPhpSdk\Util\MessageHeader;
 use Tighten\SolanaPhpSdk\Util\NonceInformation;
+use Tighten\SolanaPhpSdk\Util\ShortVec;
 use Tighten\SolanaPhpSdk\Util\SignaturePubkeyPair;
 use Tighten\SolanaPhpSdk\Util\Signer;
 
 class Transaction
 {
     /**
+     * Default (empty) signature
+     *
+     * Signatures are 64 bytes in length
+     *
+     * Buffer.alloc(64).fill(0);
+     */
+    const DEFAULT_SIGNATURE = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+
+    /**
+     *
+     */
+    const SIGNATURE_LENGTH = 64;
+
+    /**
      * @var array<SignaturePubkeyPair>
      */
-    protected array $signatures;
-    protected ?string $recentBlockhash;
-    protected ?NonceInformation $nonceInformation;
-    protected ?PublicKey $feePayer;
+    public array $signatures;
+    public ?string $recentBlockhash;
+    public ?NonceInformation $nonceInformation;
+    public ?PublicKey $feePayer;
     /**
      * @var array<TransactionInstruction>
      */
-    protected array $instructions = [];
+    public array $instructions = [];
 
     public function __construct(
         ?string $recentBlockhash = null,
@@ -266,6 +284,27 @@ class Transaction
     }
 
     /**
+     * Specify the public keys which will be used to sign the Transaction.
+     * The first signer will be used as the transaction fee payer account.
+     *
+     * Signatures can be added with either `partialSign` or `addSignature`
+     *
+     * @deprecated Deprecated since v0.84.0. Only the fee payer needs to be
+     * specified and it can be set in the Transaction constructor or with the
+     * `feePayer` property.
+     *
+     * @param array<PublicKey> $signers
+     */
+    public function setSigners(...$signers)
+    {
+        $uniqueSigners = $this->arrayUnique($signers);
+
+        $this->signatures = array_map(function(PublicKey $signer) {
+            return new SignaturePubkeyPair($signer, null);
+        }, $uniqueSigners);
+    }
+
+    /**
      * Sign the Transaction with the specified signers. Multiple signatures may
      * be applied to a Transaction. The first signature is considered "primary"
      * and is used identify and confirm transactions.
@@ -279,7 +318,7 @@ class Transaction
      *
      * The Transaction must be assigned a valid `recentBlockhash` before invoking this method
      *
-     * @param array<Signer> $signers
+     * @param array<Signer|KeyPair> $signers
      */
     public function sign(...$signers)
     {
@@ -411,6 +450,73 @@ class Transaction
     protected function _serialize(string $signData): string
     {
         throw new TodoException('TODO: implement Transaction@serialize');
+    }
+
+    /**
+     * Parse a wire transaction into a Transaction object.
+     *
+     * @param $buffer
+     * @return Transaction
+     */
+    public static function from($buffer): Transaction
+    {
+        $buffer = is_string($buffer)
+            ? Ed25519Keypair::bin2array($buffer)
+            : $buffer;
+
+        $signatureCount = ShortVec::decodeLength($buffer);
+        $signatures = [];
+        for ($i = 0; $i < $signatureCount; $i++) {
+            $signature = array_slice($buffer, 0, self::SIGNATURE_LENGTH);
+            $buffer = array_slice($buffer, self::SIGNATURE_LENGTH);
+            array_push($signatures, PublicKey::base58()->encode(Ed25519Keypair::array2bin($signature)));
+        }
+
+        return Transaction::populate(Message::from($buffer), $signatures);
+    }
+
+    /**
+     * Populate Transaction object from message and signatures
+     *
+     * @param Message $message
+     * @param array<string> $signatures
+     * @return Transaction
+     */
+    public static function populate(Message $message, array $signatures): Transaction
+    {
+        $transaction = new Transaction();
+        $transaction->recentBlockhash = $message->recentBlockhash;
+
+        if ($message->header->numRequiredSignature > 0) {
+            $transaction->feePayer = $message->accountKeys[0];
+        }
+
+        foreach ($signatures as $i => $signature) {
+            array_push($transaction->signatures, new SignaturePubkeyPair(
+                $message->accountKeys[$i],
+                $signature === PublicKey::base58()->encode(Ed25519Keypair::array2bin(self::DEFAULT_SIGNATURE))
+                ? null
+                : PublicKey::base58()->decode($signature)
+            ));
+        }
+
+        foreach ($message->instructions as $instruction) {
+            $keys = array_map(function (int $accountIndex) use ($transaction, $message) {
+                $publicKey = $message->accountKeys[$accountIndex];
+                $isSigner = $this->arraySearchAccountMetaForPublicKey($transaction->signatures, $publicKey) !== -1
+                    || $message->isAccountSigner($accountIndex);
+                $isWritable = $message->isAccountWritable($accountIndex);
+                return new AccountMeta($publicKey, $isSigner, $isWritable);
+            }, $instruction->accounts);
+
+            array_push($transaction->instructions, new TransactionInstruction(
+                $message->accountKeys[$instruction->programIdIndex],
+                $keys,
+                PublicKey::base58()->decode($instruction->data)
+            ));
+        }
+
+        return $transaction;
     }
 
     /**

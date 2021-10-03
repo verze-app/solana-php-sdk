@@ -7,6 +7,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Mockery as M;
 use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
+use Tighten\SolanaPhpSdk\KeyPair;
 use Tighten\SolanaPhpSdk\Programs\SystemProgram;
 use Tighten\SolanaPhpSdk\PublicKey;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
@@ -112,7 +113,6 @@ class PublicKeyTest extends TestCase
         $this->assertEquals(new PublicKey('GUs5qLUfsEHkcMB9T38vjr18ypEhRuNWiePW2LoK4E3K'), $programAddress);
     }
 
-
     /** @test */
     public function it_findProgramAddress()
     {
@@ -130,5 +130,19 @@ class PublicKeyTest extends TestCase
             ], $programId),
             $programAddress
         );
+    }
+
+    /** @test */
+    public function it_isOnCurve()
+    {
+        $onCurvePublicKey = KeyPair::generate()->getPublicKey();
+        $this->assertTrue(PublicKey::isOnCurve($onCurvePublicKey));
+
+        // A program address, yanked from one of the above tests. This is a pretty
+        // poor test vector since it was created by the same code it is testing.
+        // Unfortunately, I've been unable to find a golden negative example input
+        // for curve25519 point decompression :/
+        $offCurve = new PublicKey('12rqwuEgBYiGhBrDJStCiqEtzQpTTiZbh7teNVLuYcFA');
+        $this->assertFalse(PublicKey::isOnCurve($offCurve));
     }
 }

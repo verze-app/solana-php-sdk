@@ -104,7 +104,17 @@ class Message
      */
     public function serialize(): string
     {
-        throw new TodoException('Message@serialize is coming soon.');
+        $numKeys = sizeof($this->accountKeys);
+        /**
+         * @var array<integer> $keyCount
+         */
+        $keyCount = [];
+
+        $instructions = array_map(function (CompiledInstruction $instruction) {
+            $data = PublicKey::base58()->decode($instruction->data);
+
+            $keyIndicesCount = [];
+        }, $this->instructions);
     }
 
     /**

@@ -144,7 +144,11 @@ class PublicKey
 
         $hash = hash('sha256', Ed25519Keypair::array2bin($buffer));
         $binaryString = sodium_hex2bin($hash);
-        // TODO: check that we are on the curve?
+
+        if (static::isOnCurve($binaryString)) {
+            throw new GenericException('Invalid seeds, address must fall off the curve');
+        }
+
         return new PublicKey(Ed25519Keypair::bin2array($binaryString));
     }
 
@@ -177,7 +181,16 @@ class PublicKey
      */
     static function isOnCurve($publicKey): bool
     {
-        throw new TodoException("PublicKey@createProgramAddress implementation is coming soon!");
+        try {
+            $binaryString = $publicKey instanceof PublicKey
+                ? $publicKey->toBinaryString()
+                : $publicKey;
+
+            $_ = sodium_crypto_sign_ed25519_pk_to_curve25519($binaryString);
+            return true;
+        } catch (\SodiumException $exception) {
+            return false;
+        }
     }
 
     /**

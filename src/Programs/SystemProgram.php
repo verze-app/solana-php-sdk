@@ -3,16 +3,33 @@
 namespace Tighten\SolanaPhpSdk\Programs;
 
 use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
+use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Program;
+use Tighten\SolanaPhpSdk\PublicKey;
+use Tighten\SolanaPhpSdk\TransactionInstruction;
+use Tighten\SolanaPhpSdk\Util\AccountMeta;
 
 class SystemProgram extends Program
 {
+    const PROGRAM_INDEX_CREATE_ACCOUNT = 0;
+    const PROGRAM_INDEX_TRANSFER = 2;
+
     /**
      * @param $client
      */
     public function __construct($client)
     {
         parent::__construct($client);
+    }
+
+    /**
+     * Public key that identifies the System program
+     *
+     * @return PublicKey
+     */
+    static function programId(): PublicKey
+    {
+        return new PublicKey('11111111111111111111111111111111');
     }
 
     /**
@@ -57,5 +74,39 @@ class SystemProgram extends Program
     public function getTransaction(string $transactionSignature): array
     {
         return $this->client->call('getTransaction', [$transactionSignature]);
+    }
+
+    /**
+     * Generate a transaction instruction that transfers lamports from one account to another
+     *
+     * @param PublicKey $fromPubkey
+     * @param PublicKey $toPublicKey
+     * @param int $lamports
+     * @return TransactionInstruction
+     */
+    static public function transfer(
+        PublicKey $fromPubkey,
+        PublicKey $toPublicKey,
+        int $lamports
+    ): TransactionInstruction
+    {
+        // 4 byte instruction index + 8 bytes lamports
+        // look at https://www.php.net/manual/en/function.pack.php for formats.
+        $data = [
+            // uint32
+            ...unpack("C*", pack("V", self::PROGRAM_INDEX_TRANSFER)),
+            // int64
+            ...unpack("C*", pack("P", self::PROGRAM_INDEX_TRANSFER)),
+        ];
+        $keys = [
+            new AccountMeta($fromPubkey, true, true),
+            new AccountMeta($toPublicKey, false, true),
+        ];
+
+        return new TransactionInstruction(
+            static::programId(),
+            $keys,
+            $data
+        );
     }
 }
