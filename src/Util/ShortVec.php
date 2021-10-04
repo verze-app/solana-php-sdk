@@ -4,34 +4,41 @@ namespace Tighten\SolanaPhpSdk\Util;
 
 class ShortVec
 {
-    public static function decodeLength(array $bytes): int
+    /**
+     * @param array $bytes
+     * @return array list($length, $size)
+     */
+    public static function decodeLength(array $bytes): array
     {
         $len = 0;
         $size = 0;
-        for (;;) {
-            $elem = array_shift($bytes);
-            $len |= ($elem & 0x7f) << ($size * 7);
+        while ($size < sizeof($bytes)) {
+            $elem = $bytes[$size];
+            $len |= ($elem & 0x7F) << ($size * 7);
             $size++;
-            if (($elem & 0x80) === 0) {
+            if (($elem & 0x80) == 0) {
                 break;
             }
         }
-        return $len;
+        return [$len, $size];
     }
 
-    public static function encodeLength(array $bytes, int $len)
+    public static function encodeLength(int $length): array
     {
-        $rem_len = $len;
+        $elems = [];
+        $rem_len = $length;
+
         for (;;) {
             $elem = $rem_len & 0x7f;
             $rem_len >>= 7;
-            if ($rem_len == 0) {
-                array_push($bytes, $elem);
+            if (! $rem_len) {
+                array_push($elems, $elem);
                 break;
-            } else {
-                $elem |= 0x80;
-                array_push($bytes, $elem);
             }
+            $elem |= 0x80;
+            array_push($elems, $elem);
         }
+
+        return $elems;
     }
 }

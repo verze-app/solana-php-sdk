@@ -2,9 +2,12 @@
 
 namespace Tighten\SolanaPhpSdk;
 
+use Tighten\SolanaPhpSdk\Exceptions\GenericException;
 use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
+use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tighten\SolanaPhpSdk\Util\MessageHeader;
+use Tighten\SolanaPhpSdk\Util\ShortVec;
 
 class Message
 {
@@ -104,26 +107,112 @@ class Message
      */
     public function serialize(): string
     {
-        $numKeys = sizeof($this->accountKeys);
-        /**
-         * @var array<integer> $keyCount
-         */
-        $keyCount = [];
+        $out = [
+            ...$this->encodeMessage(),
+            ...ShortVec::encodeLength(sizeof($this->instructions)),
+        ];
 
-        $instructions = array_map(function (CompiledInstruction $instruction) {
-            $data = PublicKey::base58()->decode($instruction->data);
+        foreach ($this->instructions as $instruction) {
+            array_push($out, ...$this->encodeInstruction($instruction));
+        }
 
-            $keyIndicesCount = [];
-        }, $this->instructions);
+        return Ed25519Keypair::array2bin($out);
     }
 
     /**
-     * @param array $buffer
-     * @return Message
-     * @throws TodoException
+     * @return array
      */
-    public static function from(array $buffer): Message
+    protected function encodeMessage(): array
     {
-        throw new TodoException('Message@from is coming soon.');
+        $publicKeys = [];
+        foreach ($this->accountKeys as $publicKey) {
+            array_push($publicKeys, ...$publicKey->toBytes());
+        }
+
+        return [
+            // uint8
+            ...unpack("C*", pack("C", $this->header->numRequiredSignature)),
+            // uint8
+            ...unpack("C*", pack("C", $this->header->numReadonlySignedAccounts)),
+            // uint8
+            ...unpack("C*", pack("C", $this->header->numReadonlyUnsignedAccounts)),
+
+            ...ShortVec::encodeLength(sizeof($this->accountKeys)),
+            ...$publicKeys,
+            ...Ed25519Keypair::bin2array(PublicKey::base58()->decode($this->recentBlockhash)),
+        ];
+    }
+
+    protected function encodeInstruction(CompiledInstruction $instruction): array
+    {
+        $data = Ed25519Keypair::bin2array(PublicKey::base58()->decode($instruction->data));
+
+        $accounts = $instruction->accounts;;
+
+        return [
+            // uint8
+            ...unpack("C*", pack("C", $instruction->programIdIndex)),
+
+            ...ShortVec::encodeLength(sizeof($accounts)),
+            ...$accounts,
+
+            ...ShortVec::encodeLength(sizeof($data)),
+            ...$data
+        ];
+    }
+
+    /**
+     * @param array $rawMessage
+     * @return Message
+     */
+    public static function from(array $rawMessage): Message
+    {
+        $HEADER_OFFSET = 3;
+        if (sizeof($rawMessage) < $HEADER_OFFSET) {
+            throw new GenericException('byte representation of message is missing message header');
+        }
+
+        $numRequiredSignatures = array_shift($rawMessage); //$rawMessage[0];
+        $numReadonlySignedAccounts = array_shift($rawMessage); //$rawMessage[1];
+        $numReadonlyUnsignedAccounts = array_shift($rawMessage); //$rawMessage[2];
+        $header = new MessageHeader($numRequiredSignatures, $numReadonlySignedAccounts, $numReadonlyUnsignedAccounts);
+
+        $accountKeys = [];
+        list($accountsLength, $accountsOffset) = ShortVec::decodeLength($rawMessage);
+        for ($i = 0; $i < $accountsLength; $i++) {
+            $keyBytes = array_slice($rawMessage, $accountsOffset, PublicKey::LENGTH);
+            array_push($accountKeys, (new PublicKey($keyBytes))->toBase58());
+            $accountsOffset += PublicKey::LENGTH;
+        }
+        $rawMessage = array_slice($rawMessage, $accountsOffset);
+
+        $recentBlockhash = PublicKey::base58()->encode(Ed25519Keypair::array2bin(array_slice($rawMessage, 0, PublicKey::LENGTH)));
+        $rawMessage = array_slice($rawMessage, PublicKey::LENGTH);
+
+        $instructions = [];
+        list($instructionCount, $offset) = ShortVec::decodeLength($rawMessage);
+        $rawMessage = array_slice($rawMessage, $offset);
+        for ($i = 0; $i < $instructionCount; $i++) {
+            $programIdIndex = array_shift($rawMessage); // $rawMessage[0];
+
+            list ($accountsLength, $offset) = ShortVec::decodeLength($rawMessage);
+            $rawMessage = array_slice($rawMessage, $offset);
+            $accounts = array_slice($rawMessage, 0, $accountsLength);
+            $rawMessage = array_slice($rawMessage, $accountsLength);
+
+            list ($dataLength, $offset) = ShortVec::decodeLength($rawMessage);
+            $rawMessage = array_slice($rawMessage, $offset);
+            $data = array_slice($rawMessage, 0, $dataLength);
+            $rawMessage = array_slice($rawMessage, $dataLength);
+
+            array_push($instructions, new CompiledInstruction($programIdIndex, $accounts, Ed25519Keypair::array2bin($data)));
+        }
+
+        return new Message(
+            $header,
+            $accountKeys,
+            $recentBlockhash,
+            $instructions
+        );
     }
 }

@@ -354,14 +354,14 @@ class Transaction
 
     /**
      * @param Message $message
-     * @param array<Signer> $signers
+     * @param array<Signer|KeyPair> $signers
      */
     protected function _partialSign(Message $message, ...$signers)
     {
         $signData = $message->serialize();
         foreach ($signers as $signer) {
-            $signature = sodium_crypto_sign_detached($signData, $signer->secretKey);
-            $this->_addSignature($signer->publicKey, $signature);
+            $signature = sodium_crypto_sign_detached($signData, $this->toSecretKey($signer));
+            $this->_addSignature($this->toPublicKey($signer), $signature);
         }
     }
 
@@ -416,7 +416,7 @@ class Transaction
                     return false;
                 }
             } else {
-                if (! sodium_crypto_sign_verify_detached($signData, $signature->signature, $signature->publicKey->toBinaryString())) {
+                if (! sodium_crypto_sign_verify_detached($signature->signature, $signData, $signature->publicKey->toBinaryString())) {
                     return false;
                 }
             }
@@ -464,13 +464,15 @@ class Transaction
             ? Ed25519Keypair::bin2array($buffer)
             : $buffer;
 
-        $signatureCount = ShortVec::decodeLength($buffer);
+        list($signatureCount, $offset) = ShortVec::decodeLength($buffer);
         $signatures = [];
         for ($i = 0; $i < $signatureCount; $i++) {
-            $signature = array_slice($buffer, 0, self::SIGNATURE_LENGTH);
-            $buffer = array_slice($buffer, self::SIGNATURE_LENGTH);
+            $signature = array_slice($buffer, $offset, self::SIGNATURE_LENGTH);
             array_push($signatures, PublicKey::base58()->encode(Ed25519Keypair::array2bin($signature)));
+            $offset += self::SIGNATURE_LENGTH;
         }
+
+        $buffer = array_slice($buffer, $offset);
 
         return Transaction::populate(Message::from($buffer), $signatures);
     }
@@ -503,7 +505,7 @@ class Transaction
         foreach ($message->instructions as $instruction) {
             $keys = array_map(function (int $accountIndex) use ($transaction, $message) {
                 $publicKey = $message->accountKeys[$accountIndex];
-                $isSigner = $this->arraySearchAccountMetaForPublicKey($transaction->signatures, $publicKey) !== -1
+                $isSigner = static::arraySearchAccountMetaForPublicKey($transaction->signatures, $publicKey) !== -1
                     || $message->isAccountSigner($accountIndex);
                 $isWritable = $message->isAccountWritable($accountIndex);
                 return new AccountMeta($publicKey, $isSigner, $isWritable);
@@ -512,7 +514,7 @@ class Transaction
             array_push($transaction->instructions, new TransactionInstruction(
                 $message->accountKeys[$instruction->programIdIndex],
                 $keys,
-                PublicKey::base58()->decode($instruction->data)
+                Ed25519Keypair::bin2array($instruction->data)
             ));
         }
 
@@ -524,13 +526,13 @@ class Transaction
      * @param PublicKey|SignaturePubkeyPair|AccountMeta|string $needle
      * @return int|string
      */
-    protected function arraySearchAccountMetaForPublicKey(array $haystack, $needle)
+    static protected function arraySearchAccountMetaForPublicKey(array $haystack, $needle)
     {
-        $publicKeyToSearchFor = $this->toPublicKey($needle);
+        $publicKeyToSearchFor = static::toPublicKey($needle);
 
         foreach ($haystack as $i => $item)
         {
-            if ($this->toPublicKey($item) == $publicKeyToSearchFor) {
+            if (static::toPublicKey($item) == $publicKeyToSearchFor) {
                 return $i;
             }
         }
@@ -543,11 +545,11 @@ class Transaction
      * @return array
      * @throws GenericException
      */
-    protected function arrayUnique(array $haystack)
+    static protected function arrayUnique(array $haystack)
     {
         $unique = [];
         foreach ($haystack as $item) {
-            $indexOfSigner = $this->arraySearchAccountMetaForPublicKey($unique, $item);
+            $indexOfSigner = static::arraySearchAccountMetaForPublicKey($unique, $item);
 
             if ($indexOfSigner === -1) {
                 array_push($unique, $item);
@@ -562,7 +564,7 @@ class Transaction
      * @return PublicKey
      * @throws GenericException
      */
-    protected function toPublicKey($source): PublicKey
+    static protected function toPublicKey($source): PublicKey
     {
         if ($source instanceof PublicKey) {
             return $source;
@@ -574,6 +576,24 @@ class Transaction
             return new PublicKey($source);
         } elseif ($source instanceof KeyPair) {
             return $source->getPublicKey();
+        } elseif ($source instanceof Signer) {
+            return $source->publicKey;
+        } else {
+            throw new GenericException('Invalid $needle input into arraySearchAccountMetaForPublicKey');
+        }
+    }
+
+    /**
+     * @param $source
+     * @return PublicKey
+     * @throws GenericException
+     */
+    protected function toSecretKey($source): string
+    {
+        if ($source instanceof KeyPair) {
+            return Ed25519Keypair::array2bin($source->getSecretKey());
+        } elseif ($source instanceof Signer) {
+            return $source->secretKey;
         } else {
             throw new GenericException('Invalid $needle input into arraySearchAccountMetaForPublicKey');
         }

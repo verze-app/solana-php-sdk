@@ -96,7 +96,7 @@ class SystemProgram extends Program
             // uint32
             ...unpack("C*", pack("V", self::PROGRAM_INDEX_TRANSFER)),
             // int64
-            ...unpack("C*", pack("P", self::PROGRAM_INDEX_TRANSFER)),
+            ...unpack("C*", pack("P", $lamports)),
         ];
         $keys = [
             new AccountMeta($fromPubkey, true, true),

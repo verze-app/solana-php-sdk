@@ -10,6 +10,7 @@ use Tuupola\Base58;
 
 class PublicKey
 {
+    const LENGTH = 32;
     const MAX_SEED_LENGTH = 32;
 
     /**
