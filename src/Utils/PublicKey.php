@@ -10,8 +10,7 @@ class PublicKey
     public function findProgramAddressViaJavascript(string $mintKey)
     {
         $process = new Process([
-            // (new ExecutableFinder())->find('node'), // @todo solve why not working!
-            '/Users/mattstauffer/.nvm/versions/node/v15.4.0/bin/node',
+            (new ExecutableFinder())->find('node'),
             'findProgramAddress.js',
             $mintKey,
         ], realpath(__DIR__ . '/../../js-src'), null, null, null);
