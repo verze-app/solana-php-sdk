@@ -3,3 +3,4 @@ vendor
 .php_cs.cache
 .phpunit.result.cache
 .idea
+node_modules
