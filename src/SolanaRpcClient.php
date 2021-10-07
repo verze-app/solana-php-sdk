@@ -13,6 +13,7 @@ use Tighten\SolanaPhpSdk\Exceptions\MethodNotFoundException;
  */
 class SolanaRpcClient
 {
+    public const LOCAL_ENDPOINT = 'http://localhost:8899';
     public const DEVNET_ENDPOINT = 'https://api.devnet.solana.com';
     public const TESTNET_ENDPOINT = 'https://api.testnet.solana.com';
     public const MAINNET_ENDPOINT = 'https://api.mainnet-beta.solana.com';
