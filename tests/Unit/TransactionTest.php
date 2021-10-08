@@ -1,6 +1,6 @@
 <?php
 
-namespace Tighten\SolanaPhpSdk\Tests;
+namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\Response;
@@ -11,6 +11,7 @@ use Tighten\SolanaPhpSdk\KeyPair;
 use Tighten\SolanaPhpSdk\Programs\SystemProgram;
 use Tighten\SolanaPhpSdk\PublicKey;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
+use Tighten\SolanaPhpSdk\Tests\TestCase;
 use Tighten\SolanaPhpSdk\Transaction;
 use Tighten\SolanaPhpSdk\TransactionInstruction;
 use Tighten\SolanaPhpSdk\Util\AccountMeta;
@@ -79,25 +80,26 @@ class TransactionTest extends TestCase
         $recentBlockhash = $account1->getPublicKey()->toBase58(); // Fake recentBlockhash
         $transfer = SystemProgram::transfer($account1->getPublicKey(), $account2->getPublicKey(), 123);
 
+        $partialTransaction = new Transaction($recentBlockhash);
+        $partialTransaction->add($transfer);
+        $partialTransaction->partialSign($account1, $account2->getPublicKey());
+
+//        $partialTransaction->setSigners($account1->getPublicKey(), $account2->getPublicKey());
+//
+//        $this->assertNull($partialTransaction->signatures[0]->signature);
+//        $this->assertNull($partialTransaction->signatures[1]->signature);
+//
+//        $partialTransaction->partialSign($account1);
+//        $this->assertNotNull($partialTransaction->signatures[0]->signature);
+//        $this->assertNull($partialTransaction->signatures[1]->signature);
+//
+//        $partialTransaction->partialSign($account2);
+//        $this->assertNotNull($partialTransaction->signatures[0]->signature);
+//        $this->assertNotNull($partialTransaction->signatures[1]->signature);
+
         $transaction = new Transaction($recentBlockhash);
         $transaction->add($transfer);
         $transaction->sign($account1, $account2);
-
-        $partialTransaction = new Transaction($recentBlockhash);
-        $partialTransaction->add($transfer);
-        $partialTransaction->setSigners($account1->getPublicKey(), $account2->getPublicKey());
-
-        $this->assertNull($partialTransaction->signatures[0]->signature);
-        $this->assertNull($partialTransaction->signatures[1]->signature);
-
-        $partialTransaction->partialSign($account1);
-        $this->assertNotNull($partialTransaction->signatures[0]->signature);
-        $this->assertNull($partialTransaction->signatures[1]->signature);
-
-        $partialTransaction->partialSign($account2);
-        $this->assertNotNull($partialTransaction->signatures[0]->signature);
-        $this->assertNotNull($partialTransaction->signatures[1]->signature);
-
         $this->assertEquals($transaction, $partialTransaction);
     }
 
@@ -151,6 +153,7 @@ class TransactionTest extends TestCase
         $orgTransaction->sign($account1, $account2);
 
         $newTransaction = new Transaction($orgTransaction->recentBlockhash, null, null, $orgTransaction->signatures);
+        $newTransaction->add($transfer1, $transfer2);
 
         $this->assertEquals($orgTransaction, $newTransaction);
     }
@@ -161,17 +164,17 @@ class TransactionTest extends TestCase
 //        // TODO: need SystemProgram more built out.
 //    }
 
-    /** @test */
-    public function it_use_nonce()
-    {
-        $account1 = KeyPair::generate();
-        $account2 = KeyPair::generate();
-        $nonceAccount = KeyPair::generate();
-        $nonce = $account2->getPublicKey()->toBase58(); // Fake Nonce hash
-
-//        $nonceInfo = new NonceInformation($nonce, )
-        // TODO: need SystemProgram more built out. SystemProgram::nonceAdvance().
-    }
+//    /** @test */
+//    public function it_use_nonce()
+//    {
+//        $account1 = KeyPair::generate();
+//        $account2 = KeyPair::generate();
+//        $nonceAccount = KeyPair::generate();
+//        $nonce = $account2->getPublicKey()->toBase58(); // Fake Nonce hash
+//
+////        $nonceInfo = new NonceInformation($nonce, )
+//        // TODO: need SystemProgram more built out. SystemProgram::nonceAdvance().
+//    }
 
     /** @test */
     public function it_parse_wire_format_and_serialize()
@@ -191,11 +194,11 @@ class TransactionTest extends TestCase
         $this->assertEquals($tx, $expectedTransaction);
     }
 
-    /** @test */
-    public function it_populate_transaction()
-    {
-        // TODO
-    }
+//    /** @test */
+//    public function it_populate_transaction()
+//    {
+//        // TODO
+//    }
 
     /** @test */
     public function it_serialize_unsigned_transaction()
@@ -207,5 +210,10 @@ class TransactionTest extends TestCase
         $transfer = SystemProgram::transfer($sender->getPublicKey(), $recipient, 49);
         $expectedTransaction = new Transaction($recentBlockhash);
         $expectedTransaction->add($transfer);
+
+        // Empty signature array fails.
+        $this->assertCount(0, $expectedTransaction->signatures);
+
+        $expectedTransaction->feePayer = $sender->getPublicKey();
     }
 }

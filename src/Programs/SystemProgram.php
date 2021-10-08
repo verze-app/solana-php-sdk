@@ -109,4 +109,35 @@ class SystemProgram extends Program
             $data
         );
     }
+
+    static public function createAccount(
+        PublicKey $fromPubkey,
+        PublicKey $newAccountPublicKey,
+        int $lamports,
+        int $space,
+        PublicKey $programId
+    ): TransactionInstruction
+    {
+        // look at https://www.php.net/manual/en/function.pack.php for formats.
+        $data = [
+            // uint32
+            ...unpack("C*", pack("V", self::PROGRAM_INDEX_CREATE_ACCOUNT)),
+            // int64
+            ...unpack("C*", pack("P", $lamports)),
+            // int64
+            ...unpack("C*", pack("P", $space)),
+            //
+            ...$programId->toBytes(),
+        ];
+        $keys = [
+            new AccountMeta($fromPubkey, true, true),
+            new AccountMeta($newAccountPublicKey, true, true),
+        ];
+
+        return new TransactionInstruction(
+            static::programId(),
+            $keys,
+            $data
+        );
+    }
 }

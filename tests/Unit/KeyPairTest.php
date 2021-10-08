@@ -1,6 +1,6 @@
 <?php
 
-namespace Tighten\SolanaPhpSdk\Tests;
+namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\Response;
@@ -11,6 +11,7 @@ use Tighten\SolanaPhpSdk\KeyPair;
 use Tighten\SolanaPhpSdk\Programs\SystemProgram;
 use Tighten\SolanaPhpSdk\PublicKey;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
+use Tighten\SolanaPhpSdk\Tests\TestCase;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 
 class KeyPairTest extends TestCase

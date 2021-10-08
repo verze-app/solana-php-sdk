@@ -1,6 +1,6 @@
 <?php
 
-namespace Tighten\SolanaPhpSdk\Tests;
+namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\Response;
@@ -9,6 +9,7 @@ use Mockery as M;
 use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
 use Tighten\SolanaPhpSdk\Programs\SystemProgram;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
+use Tighten\SolanaPhpSdk\Tests\TestCase;
 
 class SolanaTest extends TestCase
 {

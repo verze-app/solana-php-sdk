@@ -53,12 +53,12 @@ class SolanaRpcClient
     /**
      * @param string $method
      * @param array $params
-     * @return Response
+     * @return mixed
      * @throws GenericException
      * @throws InvalidIdResponseException
      * @throws MethodNotFoundException
      */
-    public function call(string $method, array $params = []): array
+    public function call(string $method, array $params = [])
     {
         $response = Http::acceptJson()->post(
             $this->endpoint,

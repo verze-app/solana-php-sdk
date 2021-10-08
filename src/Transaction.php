@@ -33,6 +33,11 @@ class Transaction
     const SIGNATURE_LENGTH = 64;
 
     /**
+     *
+     */
+    const PACKET_DATA_SIZE = 1280 - 40 - 8;
+
+    /**
      * @var array<SignaturePubkeyPair>
      */
     public array $signatures;
@@ -80,7 +85,7 @@ class Transaction
             if ($item instanceof TransactionInstruction) {
                 array_push($this->instructions, $item);
             } elseif ($item instanceof Transaction) {
-                array_push($this->instructions, $item->instructions);
+                array_push($this->instructions, ...$item->instructions);
             } else {
                 throw new GenericException("Invalid parameter to add(). Only Transaction and TransactionInstruction are allows.");
             }
@@ -96,7 +101,7 @@ class Transaction
     {
         $nonceInfo = $this->nonceInformation;
 
-        if ($nonceInfo && sizeof($this->instructions) && $this->instructions[0] != $nonceInfo->nonceInstruction) {
+        if ($nonceInfo && sizeof($this->instructions) && $this->instructions[0] !== $nonceInfo->nonceInstruction) {
             $this->recentBlockhash = $nonceInfo->nonce;
             array_unshift($this->instructions, $nonceInfo->nonceInstruction);
         }
@@ -104,6 +109,8 @@ class Transaction
         $recentBlockhash = $this->recentBlockhash;
         if (! $recentBlockhash) {
             throw new GenericException('Transaction recentBlockhash required');
+        } elseif (! sizeof($this->instructions)) {
+            throw new GenericException('No instructions provided');
         }
 
         if ($this->feePayer) {
@@ -114,11 +121,6 @@ class Transaction
             throw new GenericException('Transaction fee payer required');
         }
 
-        foreach ($this->instructions as $i => $instruction) {
-            if (! $instruction->programId) {
-                throw new GenericException("Transaction instruction index {$i} has undefined program id");
-            }
-        }
 
         /**
          * @var array<string> $programIds
@@ -129,7 +131,11 @@ class Transaction
          */
         $accountMetas = [];
 
-        foreach ($this->instructions as $instruction) {
+        foreach ($this->instructions as $i => $instruction) {
+            if (! $instruction->programId) {
+                throw new GenericException("Transaction instruction index {$i} has undefined program id");
+            }
+
             array_push($accountMetas, ...$instruction->keys);
 
             $programId = $instruction->programId->toBase58();
@@ -226,6 +232,13 @@ class Transaction
             }
         }
 
+        // Initialize signature array, if needed
+        if (! $this->signatures) {
+            $this->signatures = array_map(function($signedKey) {
+                return new SignaturePubkeyPair(new PublicKey($signedKey), null);
+            }, $signedKeys);
+        }
+
         $accountKeys = array_merge($signedKeys, $unsignedKeys);
         /**
          * @var array<CompiledInstruction> $instructions
@@ -258,29 +271,29 @@ class Transaction
     /**
      * @return Message
      */
-    protected function compile(): Message
-    {
-        $message = $this->compileMessage();
-        $signedKeys = array_slice($message->accountKeys, 0, $message->header->numRequiredSignature);
-
-        if (sizeof($this->signatures) === sizeof($signedKeys)
-            && $this->signatures == $signedKeys) { // todo does this simple comparison work for comparing complex arrays?
-            return $message;
-        }
-
-        $this->signatures = array_map(function (PublicKey $publicKey) {
-            return new SignaturePubkeyPair($publicKey, null);
-        }, $signedKeys);
-
-        return $message;
-    }
+//    protected function compile(): Message
+//    {
+//        $message = $this->compileMessage();
+//        $signedKeys = array_slice($message->accountKeys, 0, $message->header->numRequiredSignature);
+//
+//        if (sizeof($this->signatures) === sizeof($signedKeys)
+//            && $this->signatures == $signedKeys) {
+//            return $message;
+//        }
+//
+//        $this->signatures = array_map(function (PublicKey $publicKey) {
+//            return new SignaturePubkeyPair($publicKey, null);
+//        }, $signedKeys);
+//
+//        return $message;
+//    }
 
     /**
      * Get a buffer of the Transaction data that need to be covered by signatures
      */
     public function serializeMessage(): string
     {
-        return $this->compile()->serialize();
+        return $this->compileMessage()->serialize();
     }
 
     /**
@@ -329,7 +342,7 @@ class Transaction
             return new SignaturePubkeyPair($this->toPublicKey($signer), null);
         }, $signers);
 
-        $message = $this->compile();
+        $message = $this->compileMessage();
         $this->_partialSign($message, ...$uniqueSigners);
         $this->_verifySignature($message->serialize(), true);
     }
@@ -348,7 +361,7 @@ class Transaction
         // Dedupe signers
         $uniqueSigners = $this->arrayUnique($signers);
 
-        $message = $this->compile();
+        $message = $this->compileMessage();
         $this->_partialSign($message, ...$uniqueSigners);
     }
 
@@ -376,7 +389,11 @@ class Transaction
      */
     public function addSignature(PublicKey $publicKey, string $signature)
     {
-        $this->compile(); // Ensure signatures array is populated
+        if (strlen($signature) !== self::SIGNATURE_LENGTH) {
+            throw new GenericException('Signature has invalid length');
+        }
+
+//        $this->compile(); // Ensure signatures array is populated
         $this->_addSignature($publicKey, $signature);
     }
 
@@ -449,7 +466,40 @@ class Transaction
      */
     protected function _serialize(string $signData): string
     {
-        throw new TodoException('TODO: implement Transaction@serialize');
+        if (sizeof($this->signatures) >= self::SIGNATURE_LENGTH * 4) {
+            throw new GenericException('too many singatures to encode');
+        }
+
+        $wireTransaction = [];
+
+        $signatureCount = ShortVec::encodeLength(sizeof($this->signatures));
+
+        // Encode signature count
+        array_push($wireTransaction, ...$signatureCount);
+
+        // Encode signatures
+        foreach ($this->signatures as $signature) {
+            if ($signature->signature && strlen($signature->signature) != self::SIGNATURE_LENGTH) {
+                throw new GenericException("signature has invalid length: {$signature->signature}");
+            }
+
+            if ($sig = $signature->signature) {
+                array_push($wireTransaction, ...Ed25519Keypair::bin2array($sig));
+            } else {
+                array_push($wireTransaction, ...array_pad([], self::SIGNATURE_LENGTH, 0));
+            }
+        }
+
+        // Encode signed data
+        array_push($wireTransaction, ...Ed25519Keypair::bin2array($signData));
+
+        if (sizeof($wireTransaction) > self::PACKET_DATA_SIZE) {
+            $actualSize = sizeof($wireTransaction);
+            $maxSize = self::PACKET_DATA_SIZE;
+            throw new GenericException("transaction too large: {$actualSize} > {$maxSize}");
+        }
+
+        return Ed25519Keypair::array2bin($wireTransaction);
     }
 
     /**
