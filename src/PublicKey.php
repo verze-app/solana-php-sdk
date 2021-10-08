@@ -3,10 +3,10 @@
 namespace Tighten\SolanaPhpSdk;
 
 use Illuminate\Support\Arr;
+use StephenHill\Base58;
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
 use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
-use Tuupola\Base58;
 
 class PublicKey
 {
@@ -201,6 +201,6 @@ class PublicKey
      */
     public static function base58(): Base58
     {
-        return new Base58(["characters" => Base58::BITCOIN]);
+        return new Base58();
     }
 }
