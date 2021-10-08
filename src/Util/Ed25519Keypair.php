@@ -50,7 +50,8 @@ class Ed25519Keypair
      */
     public static function bin2array(string $bin): array
     {
-        return array_map(fn($ch) => ord($ch), str_split($bin));
+        // for some reason, unpack return an array starting at index 1.
+        return array_values(unpack('C*', $bin));
     }
 
     /**

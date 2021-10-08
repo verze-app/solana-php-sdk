@@ -64,8 +64,10 @@ class Transaction
 
     /**
      * The first (payer) Transaction signature
+     *
+     * @return string|null
      */
-    public function signature(): ?array
+    public function signature(): ?string
     {
         if (sizeof($this->signatures)) {
             return $this->signatures[0]->signature;
@@ -96,6 +98,9 @@ class Transaction
 
     /**
      * Compile transaction data
+     *
+     * @return Message
+     * @throws GenericException
      */
     public function compileMessage(): Message
     {
@@ -580,8 +585,7 @@ class Transaction
     {
         $publicKeyToSearchFor = static::toPublicKey($needle);
 
-        foreach ($haystack as $i => $item)
-        {
+        foreach ($haystack as $i => $item) {
             if (static::toPublicKey($item) == $publicKeyToSearchFor) {
                 return $i;
             }

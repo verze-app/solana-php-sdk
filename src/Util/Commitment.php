@@ -47,7 +47,7 @@ class Commitment
     /**
      * @return static
      */
-    public static function processes(): Commitment
+    public static function processed(): Commitment
     {
         return new static(static::PROCESSED);
     }

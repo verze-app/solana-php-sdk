@@ -84,18 +84,18 @@ class TransactionTest extends TestCase
         $partialTransaction->add($transfer);
         $partialTransaction->partialSign($account1, $account2->getPublicKey());
 
-//        $partialTransaction->setSigners($account1->getPublicKey(), $account2->getPublicKey());
-//
-//        $this->assertNull($partialTransaction->signatures[0]->signature);
-//        $this->assertNull($partialTransaction->signatures[1]->signature);
-//
-//        $partialTransaction->partialSign($account1);
-//        $this->assertNotNull($partialTransaction->signatures[0]->signature);
-//        $this->assertNull($partialTransaction->signatures[1]->signature);
-//
-//        $partialTransaction->partialSign($account2);
-//        $this->assertNotNull($partialTransaction->signatures[0]->signature);
-//        $this->assertNotNull($partialTransaction->signatures[1]->signature);
+        $partialTransaction->setSigners($account1->getPublicKey(), $account2->getPublicKey());
+
+        $this->assertNull($partialTransaction->signatures[0]->signature);
+        $this->assertNull($partialTransaction->signatures[1]->signature);
+
+        $partialTransaction->partialSign($account1);
+        $this->assertNotNull($partialTransaction->signatures[0]->signature);
+        $this->assertNull($partialTransaction->signatures[1]->signature);
+
+        $partialTransaction->partialSign($account2);
+        $this->assertNotNull($partialTransaction->signatures[0]->signature);
+        $this->assertNotNull($partialTransaction->signatures[1]->signature);
 
         $transaction = new Transaction($recentBlockhash);
         $transaction->add($transfer);
