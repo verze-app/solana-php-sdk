@@ -16,17 +16,18 @@ class SolanaTest extends TestCase
     /** @test */
     public function it_passes_undefined_calls_through_magically()
     {
+        $client = new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT);
+        $expectedIdInHttpResponse = $client->getRandomKey();
+        $solana = new SystemProgram($client);
+
         Http::fake([
             SolanaRpcClient::DEVNET_ENDPOINT => Http::response([
                 'jsonrpc' => '2.0',
                 'result' => [], // not important
-                'id' => 4051,
+                'id' => $expectedIdInHttpResponse,
             ]),
         ]);
 
-        SolanaRpcClient::$randomKeyOverrideForUnitTetsing = 4051;
-
-        $solana = new SystemProgram(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
         $solana->abcdefg([
             'param1' => 123,
         ]);
@@ -41,6 +42,9 @@ class SolanaTest extends TestCase
     /** @test */
     public function it_will_throw_exception_when_rpc_account_response_is_null()
     {
+        $client = new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT);
+        $expectedIdInHttpResponse = $client->getRandomKey();
+        $solana = new SystemProgram($client);
         Http::fake([
             SolanaRpcClient::DEVNET_ENDPOINT => Http::response([
                 'jsonrpc' => '2.0',
@@ -50,12 +54,9 @@ class SolanaTest extends TestCase
                     ],
                     'value' => null, // no account data.
                 ],
-                'id' => 4051,
+                'id' => $expectedIdInHttpResponse,
             ]),
         ]);
-
-        SolanaRpcClient::$randomKeyOverrideForUnitTetsing = 4051;
-        $solana = new SystemProgram(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
 
         $this->expectException(AccountNotFoundException::class);
         $solana->getAccountInfo('abc123');
