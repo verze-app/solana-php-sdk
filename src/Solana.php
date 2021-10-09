@@ -68,6 +68,11 @@ class Solana
         return $this->client->call('getTransaction', [$transactionSignature])['result'];
     }
 
+    public function getConfirmedSignaturesForAddress2(string $address, int $limit = 5): array
+    {
+        return $this->client->call('getConfirmedSignaturesForAddress2', [$address, ['limit' => $limit]])['result'];
+    }
+
     public function __call($method, array $params = []): ?array
     {
         return $this->client->call($method, $params)->json();
