@@ -17,15 +17,13 @@ class SolanaRpcClient
     public const TESTNET_ENDPOINT = 'https://api.testnet.solana.com';
     public const MAINNET_ENDPOINT = 'https://api.mainnet-beta.solana.com';
 
-    public static $randomKeyOverrideForUnitTetsing = null;
-
     protected $endpoint;
     protected $randomKey;
 
     public function __construct(string $endpoint)
     {
         $this->endpoint = $endpoint;
-        $this->randomKey = static::$randomKeyOverrideForUnitTetsing ?? random_int(5, 25000);
+        $this->randomKey = random_int(5, 25000);
     }
 
     public function call(string $method, array $params = []): Response
@@ -67,5 +65,13 @@ class SolanaRpcClient
         if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
             throw new GenericException('API Error: status code ' . $response->getStatusCode());
         }
+    }
+
+    /**
+     * @return int
+     */
+    public function getRandomKey(): int
+    {
+        return $this->randomKey;
     }
 }

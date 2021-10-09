@@ -31,6 +31,9 @@ class SolanaTest extends TestCase
     /** @test */
     public function it_will_throw_exception_when_rpc_account_response_is_null()
     {
+        $client = new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT);
+        $expectedIdInHttpResponse = $client->getRandomKey();
+        $solana = new Solana($client);
         Http::fake([
             SolanaRpcClient::DEVNET_ENDPOINT => Http::response([
                 'jsonrpc' => '2.0',
@@ -40,12 +43,9 @@ class SolanaTest extends TestCase
                     ],
                     'value' => null, // no account data.
                 ],
-                'id' => 4051,
+                'id' => $expectedIdInHttpResponse,
             ]),
         ]);
-
-        SolanaRpcClient::$randomKeyOverrideForUnitTetsing = 4051;
-        $solana = new Solana(new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT));
 
         $this->expectException(AccountNotFoundException::class);
         $solana->getAccountInfo('abc123');
