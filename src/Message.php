@@ -3,6 +3,7 @@
 namespace Tighten\SolanaPhpSdk;
 
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
+use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
 use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
@@ -171,7 +172,7 @@ class Message
     {
         $HEADER_OFFSET = 3;
         if (sizeof($rawMessage) < $HEADER_OFFSET) {
-            throw new GenericException('byte representation of message is missing message header');
+            throw new InputValidationException('Byte representation of message is missing message header.');
         }
 
         $numRequiredSignatures = array_shift($rawMessage); //$rawMessage[0];

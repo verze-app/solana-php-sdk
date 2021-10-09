@@ -3,6 +3,7 @@
 namespace Tighten\SolanaPhpSdk;
 
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
+use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
 use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Util\AccountMeta;
 use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
@@ -89,7 +90,7 @@ class Transaction
             } elseif ($item instanceof Transaction) {
                 array_push($this->instructions, ...$item->instructions);
             } else {
-                throw new GenericException("Invalid parameter to add(). Only Transaction and TransactionInstruction are allows.");
+                throw new InputValidationException("Invalid parameter to add(). Only Transaction and TransactionInstruction are allows.");
             }
         }
 
@@ -113,9 +114,9 @@ class Transaction
 
         $recentBlockhash = $this->recentBlockhash;
         if (! $recentBlockhash) {
-            throw new GenericException('Transaction recentBlockhash required');
+            throw new InputValidationException('Transaction recentBlockhash required.');
         } elseif (! sizeof($this->instructions)) {
-            throw new GenericException('No instructions provided');
+            throw new InputValidationException('No instructions provided.');
         }
 
         if ($this->feePayer) {
@@ -123,7 +124,7 @@ class Transaction
         } elseif (sizeof($this->signatures) && $this->signatures[0]->publicKey) {
             $feePayer = $this->signatures[0]->publicKey;
         } else {
-            throw new GenericException('Transaction fee payer required');
+            throw new InputValidationException('Transaction fee payer required.');
         }
 
 
@@ -138,7 +139,7 @@ class Transaction
 
         foreach ($this->instructions as $i => $instruction) {
             if (! $instruction->programId) {
-                throw new GenericException("Transaction instruction index {$i} has undefined program id");
+                throw new InputValidationException("Transaction instruction index {$i} has undefined program id.");
             }
 
             array_push($accountMetas, ...$instruction->keys);
@@ -204,7 +205,7 @@ class Transaction
             if ($uniqueIndex > -1) {
                 $uniqueMetas[$uniqueIndex]->isSigner = true;
             } else {
-                throw new GenericException("unknown signer: {$signature->publicKey->toBase58()}");
+                throw new InputValidationException("Unknown signer: {$signature->publicKey->toBase58()}");
             }
         }
 
@@ -383,7 +384,7 @@ class Transaction
             if ($signer instanceof KeyPair) {
                 $signature = sodium_crypto_sign_detached($signData, $this->toSecretKey($signer));
                 if (strlen($signature) != self::SIGNATURE_LENGTH) {
-                    throw new GenericException('signature has invalid length');
+                    throw new InputValidationException('Signature has invalid length.');
                 }
                 $this->_addSignature($this->toPublicKey($signer), $signature);
             }
@@ -402,7 +403,7 @@ class Transaction
     public function addSignature(PublicKey $publicKey, string $signature)
     {
         if (strlen($signature) !== self::SIGNATURE_LENGTH) {
-            throw new GenericException('Signature has invalid length');
+            throw new InputValidationException('Signature has invalid length.');
         }
 
 //        $this->compile(); // Ensure signatures array is populated
@@ -418,7 +419,7 @@ class Transaction
         $indexOfPublicKey = $this->arraySearchAccountMetaForPublicKey($this->signatures, $publicKey);
 
         if ($indexOfPublicKey === -1) {
-            throw new GenericException("unknown signer: {$publicKey->toBase58()}");
+            throw new InputValidationException("Unknown signer: {$publicKey->toBase58()}");
         }
 
         $this->signatures[$indexOfPublicKey]->signature = $signature;
@@ -479,7 +480,7 @@ class Transaction
     protected function _serialize(string $signData): string
     {
         if (sizeof($this->signatures) >= self::SIGNATURE_LENGTH * 4) {
-            throw new GenericException('too many singatures to encode');
+            throw new InputValidationException('Too many signatures to encode.');
         }
 
         $wireTransaction = [];
@@ -640,7 +641,7 @@ class Transaction
         } elseif ($source instanceof Signer) {
             return $source->publicKey;
         } else {
-            throw new GenericException('Invalid $needle input into arraySearchAccountMetaForPublicKey');
+            throw new InputValidationException('Unsupported input: ' . get_class($source));
         }
     }
 
@@ -656,7 +657,7 @@ class Transaction
         } elseif ($source instanceof Signer) {
             return $source->secretKey;
         } else {
-            throw new GenericException('Invalid $needle input into arraySearchAccountMetaForPublicKey: ' . get_class($source));
+            throw new InputValidationException('Unsupported input: ' . get_class($source));
         }
     }
 }

@@ -3,7 +3,9 @@
 namespace Tighten\SolanaPhpSdk;
 
 use StephenHill\Base58;
+use Tighten\SolanaPhpSdk\Exceptions\BaseSolanaPhpSdkException;
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
+use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use SodiumException;
 
@@ -32,12 +34,12 @@ class PublicKey
         } elseif (is_numeric($bn)) {
             $this->byteArray = array_pad([], self::LENGTH, $bn);
         } else {
-            throw new GenericException("Invalid PublicKey input");
+            throw new InputValidationException("Invalid PublicKey input.");
         }
 
         if (sizeof($this->byteArray) !== self::LENGTH) {
             $len = sizeof($this->byteArray);
-            throw new GenericException("Invalid public key input. Expected length 32. Found: {$len}");
+            throw new InputValidationException("Invalid public key input. Expected length 32. Found: {$len}");
         }
     }
 
@@ -134,7 +136,7 @@ class PublicKey
         $buffer = [];
         foreach ($seeds as $seed) {
             if (sizeof($seed) > self::MAX_SEED_LENGTH) {
-                throw new GenericException("Max seed length exceeded");
+                throw new InputValidationException("Max seed length exceeded.");
             }
             array_push($buffer, ...$seed);
         }
@@ -148,7 +150,7 @@ class PublicKey
         $binaryString = sodium_hex2bin($hash);
 
         if (static::isOnCurve($binaryString)) {
-            throw new GenericException('Invalid seeds, address must fall off the curve');
+            throw new InputValidationException('Invalid seeds, address must fall off the curve.');
         }
 
         return new PublicKey(Ed25519Keypair::bin2array($binaryString));
@@ -175,7 +177,7 @@ class PublicKey
             return [$address, $nonce];
         }
 
-        throw new GenericException('Unable to find a viable program address nonce');
+        throw new BaseSolanaPhpSdkException('Unable to find a viable program address nonce.');
     }
 
     /**

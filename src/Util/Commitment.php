@@ -3,6 +3,7 @@
 namespace Tighten\SolanaPhpSdk\Util;
 
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
+use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
 
 class Commitment
 {
@@ -22,7 +23,7 @@ class Commitment
             self::CONFIRMED,
             self::PROCESSED
         ])) {
-            throw new GenericException('Invalid commitment level.');
+            throw new InputValidationException('Invalid commitment level.');
         }
 
         $this->commitmentLevel = $commitmentLevel;
