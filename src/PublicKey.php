@@ -2,11 +2,10 @@
 
 namespace Tighten\SolanaPhpSdk;
 
-use Illuminate\Support\Arr;
 use StephenHill\Base58;
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
-use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
+use SodiumException;
 
 class PublicKey
 {
@@ -49,7 +48,7 @@ class PublicKey
     }
 
     /**
-     * Checks if two publicKeys are equal
+     * Check if two publicKeys are equal
      */
     public function equals($publicKey): bool
     {
@@ -189,7 +188,7 @@ class PublicKey
 
             $_ = sodium_crypto_sign_ed25519_pk_to_curve25519($binaryString);
             return true;
-        } catch (\SodiumException $exception) {
+        } catch (SodiumException $exception) {
             return false;
         }
     }

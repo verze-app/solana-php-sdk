@@ -4,6 +4,7 @@ namespace Tighten\SolanaPhpSdk;
 
 use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
+use SodiumException;
 
 /**
  * An account keypair used for signing transactions.
@@ -13,7 +14,8 @@ class KeyPair
     protected Ed25519Keypair $_keypair;
 
     /**
-     * @param $secretKey
+     * @param Ed25519Keypair|null $keypair
+     * @throws SodiumException
      */
     public function __construct(?Ed25519Keypair $keypair = null)
     {
@@ -52,7 +54,7 @@ class KeyPair
      *
      * @param string $seed
      * @return KeyPair
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     static public function fromSeed(string $seed): KeyPair
     {

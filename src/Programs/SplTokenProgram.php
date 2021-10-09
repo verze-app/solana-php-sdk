@@ -9,14 +9,6 @@ class SplTokenProgram extends Program
     public const SOLANA_TOKEN_PROGRAM_ID = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
 
     /**
-     * @param $client
-     */
-    public function __construct($client)
-    {
-        parent::__construct($client);
-    }
-
-    /**
      * @param string $pubKey
      * @return mixed
      */

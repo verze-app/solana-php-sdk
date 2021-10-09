@@ -8,6 +8,9 @@ class Account
 {
     protected KeyPair $keyPair;
 
+    /**
+     * @param null|string|array $secretKey
+     */
     public function __construct($secretKey = null)
     {
         if ($secretKey) {

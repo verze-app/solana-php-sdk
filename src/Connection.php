@@ -54,10 +54,8 @@ class Connection extends Program
 
     /**
      * @param Commitment|null $commitment
-     * @return string
-     * @throws Exceptions\GenericException
-     * @throws Exceptions\InvalidIdResponseException
-     * @throws Exceptions\MethodNotFoundException
+     * @return array
+     * @throws Exceptions\GenericException|Exceptions\MethodNotFoundException|Exceptions\InvalidIdResponseException
      */
     public function getRecentBlockhash(?Commitment $commitment = null): array
     {

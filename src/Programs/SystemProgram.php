@@ -15,14 +15,6 @@ class SystemProgram extends Program
     const PROGRAM_INDEX_TRANSFER = 2;
 
     /**
-     * @param $client
-     */
-    public function __construct($client)
-    {
-        parent::__construct($client);
-    }
-
-    /**
      * Public key that identifies the System program
      *
      * @return PublicKey

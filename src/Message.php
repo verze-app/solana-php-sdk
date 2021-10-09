@@ -37,9 +37,9 @@ class Message
      */
     public function __construct(
         MessageHeader $header,
-        array         $accountKeys,
-        string        $recentBlockhash,
-        array         $instructions
+        array $accountKeys,
+        string $recentBlockhash,
+        array $instructions
     )
     {
         $this->header = $header;
@@ -50,6 +50,7 @@ class Message
         $this->instructions = $instructions;
 
         $this->indexToProgramIds = [];
+
         foreach ($instructions as $instruction) {
             $this->indexToProgramIds[$instruction->programIdIndex] = $this->accountKeys[$instruction->programIdIndex];
         }
@@ -125,6 +126,7 @@ class Message
     protected function encodeMessage(): array
     {
         $publicKeys = [];
+
         foreach ($this->accountKeys as $publicKey) {
             array_push($publicKeys, ...$publicKey->toBytes());
         }

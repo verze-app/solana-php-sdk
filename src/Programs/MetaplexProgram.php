@@ -9,14 +9,6 @@ class MetaplexProgram extends Program
     public const METAPLEX_PROGRAM_ID = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s';
 
     /**
-     * @param $client
-     */
-    public function __construct($client)
-    {
-        parent::__construct($client);
-    }
-
-    /**
      * @param string $pubKey
      * @return array|mixed
      */

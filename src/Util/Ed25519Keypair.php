@@ -2,6 +2,8 @@
 
 namespace Tighten\SolanaPhpSdk\Util;
 
+use SodiumException;
+
 class Ed25519Keypair
 {
     public array $publicKey;
@@ -22,7 +24,7 @@ class Ed25519Keypair
     }
 
     /**
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public static function generate(): Ed25519Keypair
     {
@@ -34,7 +36,7 @@ class Ed25519Keypair
     /**
      * @param $keyPair
      * @return Ed25519Keypair
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public static function from($keyPair): Ed25519Keypair
     {
