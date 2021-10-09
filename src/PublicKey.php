@@ -29,11 +29,13 @@ class PublicKey
             $this->byteArray = $bn;
         } elseif ($bn instanceof PublicKey) {
             $this->byteArray = $bn->byteArray;
+        } elseif (is_numeric($bn)) {
+            $this->byteArray = array_pad([], self::LENGTH, $bn);
         } else {
             throw new GenericException("Invalid PublicKey input");
         }
 
-        if (sizeof($this->byteArray) !== 32) {
+        if (sizeof($this->byteArray) !== self::LENGTH) {
             $len = sizeof($this->byteArray);
             throw new GenericException("Invalid public key input. Expected length 32. Found: {$len}");
         }
@@ -77,7 +79,7 @@ class PublicKey
      */
     public function toBuffer(): array
     {
-        return array_pad($this->byteArray, 32, 0);
+        return array_pad($this->byteArray, self::LENGTH, 0);
     }
 
     /**

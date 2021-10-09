@@ -52,12 +52,16 @@ class KeyPair
     /**
      * Generate a keypair from a 32 byte seed.
      *
-     * @param string $seed
+     * @param string|array $seed
      * @return KeyPair
      * @throws SodiumException
      */
-    static public function fromSeed(string $seed): KeyPair
+    static public function fromSeed($seed): KeyPair
     {
+        $seed = is_string($seed)
+            ? $seed
+            : Ed25519Keypair::array2bin($seed);
+
         $keyPair = sodium_crypto_sign_seed_keypair($seed);
 
         return new static(
