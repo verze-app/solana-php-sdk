@@ -2,9 +2,7 @@
 
 namespace Tighten\SolanaPhpSdk;
 
-use Tighten\SolanaPhpSdk\Exceptions\GenericException;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
-use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tighten\SolanaPhpSdk\Util\MessageHeader;
@@ -99,13 +97,12 @@ class Message
     public function nonProgramIds(): array
     {
         return array_filter($this->accountKeys, function (PublicKey $account, $index) {
-            return !$this->isProgramId($index);
+            return ! $this->isProgramId($index);
         });
     }
 
     /**
      * @return string
-     * @throws TodoException
      */
     public function serialize(): string
     {
@@ -160,7 +157,7 @@ class Message
             ...$accounts,
 
             ...ShortVec::encodeLength(sizeof($data)),
-            ...$data
+            ...$data,
         ];
     }
 

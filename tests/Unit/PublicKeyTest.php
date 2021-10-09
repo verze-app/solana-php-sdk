@@ -2,18 +2,10 @@
 
 namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
-use Illuminate\Http\Client\Request;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
-use Mockery as M;
-use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
 use Tighten\SolanaPhpSdk\KeyPair;
-use Tighten\SolanaPhpSdk\Programs\SystemProgram;
 use Tighten\SolanaPhpSdk\PublicKey;
-use Tighten\SolanaPhpSdk\SolanaRpcClient;
 use Tighten\SolanaPhpSdk\Tests\TestCase;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
-use Tuupola\Base58;
 
 class PublicKeyTest extends TestCase
 {
@@ -92,18 +84,18 @@ class PublicKeyTest extends TestCase
 
         $programAddress = PublicKey::createProgramAddress([
             Ed25519Keypair::bin2array(''),
-            [1]
+            [1],
         ], $programId);
         $this->assertEquals(new PublicKey('3gF2KMe9KiC6FNVBmfg9i267aMPvK37FewCip4eGBFcT'), $programAddress);
 
         $programAddress = PublicKey::createProgramAddress([
-            Ed25519Keypair::bin2array('☉')
+            Ed25519Keypair::bin2array('☉'),
         ], $programId);
         $this->assertEquals(new PublicKey('7ytmC1nT1xY4RfxCV2ZgyA7UakC93do5ZdyhdF3EtPj7'), $programAddress);
 
         $programAddress = PublicKey::createProgramAddress([
             Ed25519Keypair::bin2array('Talking'),
-            Ed25519Keypair::bin2array('Squirrels')
+            Ed25519Keypair::bin2array('Squirrels'),
         ], $programId);
         $this->assertEquals(new PublicKey('HwRVBufQ4haG5XSgpspwKtNd3PC9GM9m1196uJW36vds'), $programAddress);
 
@@ -126,7 +118,7 @@ class PublicKeyTest extends TestCase
         $this->assertEquals(
             PublicKey::createProgramAddress([
                 Ed25519Keypair::bin2array(''),
-                [$nonce]
+                [$nonce],
             ], $programId),
             $programAddress
         );

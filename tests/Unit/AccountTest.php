@@ -2,19 +2,10 @@
 
 namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
-use Illuminate\Http\Client\Request;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
-use Mockery as M;
 use Tighten\SolanaPhpSdk\Account;
-use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
 use Tighten\SolanaPhpSdk\KeyPair;
-use Tighten\SolanaPhpSdk\Programs\SystemProgram;
-use Tighten\SolanaPhpSdk\PublicKey;
-use Tighten\SolanaPhpSdk\SolanaRpcClient;
 use Tighten\SolanaPhpSdk\Tests\TestCase;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
-use Tuupola\Base58;
 
 class AccountTest extends TestCase
 {

@@ -4,7 +4,6 @@ namespace Tighten\SolanaPhpSdk;
 
 use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
 use Tighten\SolanaPhpSdk\Util\Commitment;
-use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 
 class Connection extends Program
 {
@@ -88,7 +87,7 @@ class Connection extends Program
             [
                 'encoding' => 'base64',
                 'preflightCommitment' => 'confirmed',
-            ]
+            ],
         ]);
     }
 }

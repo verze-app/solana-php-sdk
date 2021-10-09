@@ -3,9 +3,7 @@
 namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
 use Illuminate\Http\Client\Request;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use Mockery as M;
 use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
 use Tighten\SolanaPhpSdk\Programs\SystemProgram;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
@@ -50,7 +48,7 @@ class SolanaTest extends TestCase
                 'jsonrpc' => '2.0',
                 'result' => [
                     'context' =>  [
-                        'slot' => 6440
+                        'slot' => 6440,
                     ],
                     'value' => null, // no account data.
                 ],

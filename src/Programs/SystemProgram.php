@@ -3,7 +3,6 @@
 namespace Tighten\SolanaPhpSdk\Programs;
 
 use Tighten\SolanaPhpSdk\Exceptions\AccountNotFoundException;
-use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Program;
 use Tighten\SolanaPhpSdk\PublicKey;
 use Tighten\SolanaPhpSdk\TransactionInstruction;

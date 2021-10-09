@@ -2,9 +2,8 @@
 
 namespace Tighten\SolanaPhpSdk;
 
-use Tighten\SolanaPhpSdk\Exceptions\TodoException;
-use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use SodiumException;
+use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 
 /**
  * An account keypair used for signing transactions.

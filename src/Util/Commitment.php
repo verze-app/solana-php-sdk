@@ -2,7 +2,6 @@
 
 namespace Tighten\SolanaPhpSdk\Util;
 
-use Tighten\SolanaPhpSdk\Exceptions\GenericException;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
 
 class Commitment
@@ -21,7 +20,7 @@ class Commitment
         if (! in_array($commitmentLevel, [
             self::FINALIZED,
             self::CONFIRMED,
-            self::PROCESSED
+            self::PROCESSED,
         ])) {
             throw new InputValidationException('Invalid commitment level.');
         }

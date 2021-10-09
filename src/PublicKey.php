@@ -2,12 +2,11 @@
 
 namespace Tighten\SolanaPhpSdk;
 
+use SodiumException;
 use StephenHill\Base58;
 use Tighten\SolanaPhpSdk\Exceptions\BaseSolanaPhpSdkException;
-use Tighten\SolanaPhpSdk\Exceptions\GenericException;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
-use SodiumException;
 
 class PublicKey
 {

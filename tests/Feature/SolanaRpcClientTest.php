@@ -2,16 +2,8 @@
 
 namespace Tighten\SolanaPhpSdk\Tests\Feature;
 
-use Tighten\SolanaPhpSdk\Connection;
-use Tighten\SolanaPhpSdk\KeyPair;
-use Tighten\SolanaPhpSdk\Programs\SystemProgram;
-use Tighten\SolanaPhpSdk\PublicKey;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
 use Tighten\SolanaPhpSdk\Tests\TestCase;
-use Tighten\SolanaPhpSdk\Transaction;
-use Tighten\SolanaPhpSdk\TransactionInstruction;
-use Tighten\SolanaPhpSdk\Util\AccountMeta;
-use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 
 class SolanaRpcClientTest extends TestCase
 {

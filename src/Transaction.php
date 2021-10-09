@@ -4,7 +4,6 @@ namespace Tighten\SolanaPhpSdk;
 
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
-use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Util\AccountMeta;
 use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
@@ -475,7 +474,6 @@ class Transaction
     /**
      * @param string $signData
      * @return string
-     * @throws TodoException
      */
     protected function _serialize(string $signData): string
     {
