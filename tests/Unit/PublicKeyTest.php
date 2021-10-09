@@ -90,12 +90,11 @@ class PublicKeyTest extends TestCase
         $programId = new PublicKey('BPFLoader1111111111111111111111111111111111');
         $publicKey = new PublicKey('SeedPubey1111111111111111111111111111111111');
 
-//        why isn't this one working? It's something with [1] input.
-//        $programAddress = PublicKey::createProgramAddress([
-//            Ed25519Keypair::bin2array(''),
-//            [1]
-//        ], $programId);
-//        $this->assertEquals(new PublicKey('3gF2KMe9KiC6FNVBmfg9i267aMPvK37FewCip4eGBFcT'), $programAddress);
+        $programAddress = PublicKey::createProgramAddress([
+            Ed25519Keypair::bin2array(''),
+            [1]
+        ], $programId);
+        $this->assertEquals(new PublicKey('3gF2KMe9KiC6FNVBmfg9i267aMPvK37FewCip4eGBFcT'), $programAddress);
 
         $programAddress = PublicKey::createProgramAddress([
             Ed25519Keypair::bin2array('☉')

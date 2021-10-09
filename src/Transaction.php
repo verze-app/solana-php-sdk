@@ -323,6 +323,21 @@ class Transaction
     }
 
     /**
+     * Fill in a signature for a partially signed Transaction.
+     * The `signer` must be the corresponding `Keypair` for a `PublicKey` that was
+     * previously provided to `signPartial`
+     *
+     * @param KeyPair $signer
+     */
+    public function addSigner(KeyPair $signer)
+    {
+        $message = $this->compileMessage();
+        $signData = $message->serialize();
+        $signature = sodium_crypto_sign_detached($signData, $this->toSecretKey($signer));
+        $this->_addSignature($signer->getPublicKey(), $signature);
+    }
+
+    /**
      * Sign the Transaction with the specified signers. Multiple signatures may
      * be applied to a Transaction. The first signature is considered "primary"
      * and is used identify and confirm transactions.
@@ -340,16 +355,7 @@ class Transaction
      */
     public function sign(...$signers)
     {
-        // Dedupe signers
-        $uniqueSigners = $this->arrayUnique($signers);
-
-        $this->signatures = array_map(function ($signer) {
-            return new SignaturePubkeyPair($this->toPublicKey($signer), null);
-        }, $signers);
-
-        $message = $this->compileMessage();
-        $this->_partialSign($message, ...$uniqueSigners);
-        $this->_verifySignature($message->serialize(), true);
+        $this->partialSign(...$signers);
     }
 
     /**
@@ -359,27 +365,28 @@ class Transaction
      *
      * All the caveats from the `sign` method apply to `partialSign`
      *
-     * @param array<Signer> $signers
+     * @param array<Signer|KeyPair> $signers
      */
     public function partialSign(...$signers)
     {
         // Dedupe signers
         $uniqueSigners = $this->arrayUnique($signers);
 
-        $message = $this->compileMessage();
-        $this->_partialSign($message, ...$uniqueSigners);
-    }
+        $this->signatures = array_map(function ($signer) {
+            return new SignaturePubkeyPair($this->toPublicKey($signer), null);
+        }, $uniqueSigners);
 
-    /**
-     * @param Message $message
-     * @param array<Signer|KeyPair> $signers
-     */
-    protected function _partialSign(Message $message, ...$signers)
-    {
+        $message = $this->compileMessage();
         $signData = $message->serialize();
-        foreach ($signers as $signer) {
-            $signature = sodium_crypto_sign_detached($signData, $this->toSecretKey($signer));
-            $this->_addSignature($this->toPublicKey($signer), $signature);
+
+        foreach ($uniqueSigners as $signer) {
+            if ($signer instanceof KeyPair) {
+                $signature = sodium_crypto_sign_detached($signData, $this->toSecretKey($signer));
+                if (strlen($signature) != self::SIGNATURE_LENGTH) {
+                    throw new GenericException('signature has invalid length');
+                }
+                $this->_addSignature($this->toPublicKey($signer), $signature);
+            }
         }
     }
 
@@ -649,7 +656,7 @@ class Transaction
         } elseif ($source instanceof Signer) {
             return $source->secretKey;
         } else {
-            throw new GenericException('Invalid $needle input into arraySearchAccountMetaForPublicKey');
+            throw new GenericException('Invalid $needle input into arraySearchAccountMetaForPublicKey: ' . get_class($source));
         }
     }
 }
