@@ -67,4 +67,12 @@ class SolanaRpcClient
             throw new GenericException('API Error: status code ' . $response->getStatusCode());
         }
     }
+
+    /**
+     * @return int
+     */
+    public function getRandomKey(): int
+    {
+        return $this->randomKey;
+    }
 }
