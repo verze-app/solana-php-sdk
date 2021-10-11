@@ -16,11 +16,11 @@ class CompiledInstruction
     public function __construct(
         int $programIdIndex,
         array $accounts,
-        string $data
+        $data
     )
     {
         $this->programIdIndex = $programIdIndex;
         $this->accounts = $accounts;
-        $this->data = $data;
+        $this->data = Buffer::from($data);
     }
 }

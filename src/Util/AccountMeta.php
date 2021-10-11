@@ -4,9 +4,9 @@ namespace Tighten\SolanaPhpSdk\Util;
 
 use Tighten\SolanaPhpSdk\PublicKey;
 
-class AccountMeta
+class AccountMeta implements HasPublicKey
 {
-    public PublicKey $publicKey;
+    protected PublicKey $publicKey;
     public bool $isSigner;
     public bool $isWritable;
 
@@ -15,5 +15,10 @@ class AccountMeta
         $this->publicKey = $publicKey;
         $this->isSigner = $isSigner;
         $this->isWritable = $isWritable;
+    }
+
+    public function getPublicKey(): PublicKey
+    {
+        return $this->publicKey;
     }
 }

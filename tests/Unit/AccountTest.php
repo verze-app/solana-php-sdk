@@ -36,7 +36,7 @@ class AccountTest extends TestCase
     public function it_account_keypair()
     {
         $expectedAccount = new Account();
-        $keypair = KeyPair::fromSecretKey(Ed25519Keypair::array2bin($expectedAccount->getSecretKey()));
+        $keypair = KeyPair::fromSecretKey($expectedAccount->getSecretKey());
 
         $derivedAccount = new Account($keypair->getSecretKey());
         $this->assertEquals($expectedAccount->getPublicKey(), $derivedAccount->getPublicKey());

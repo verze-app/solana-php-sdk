@@ -4,6 +4,7 @@ namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
 use Tighten\SolanaPhpSdk\KeyPair;
 use Tighten\SolanaPhpSdk\Tests\TestCase;
+use Tighten\SolanaPhpSdk\Util\Buffer;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 
 class KeyPairTest extends TestCase
@@ -55,13 +56,13 @@ class KeyPairTest extends TestCase
     }
 
     /** @test */
-    public function it_bin2array_and_array2bin_are_equivelant()
+    public function it_bin2array_and_array2bin_are_equivalent()
     {
         $keyPair = sodium_crypto_sign_keypair();
         $publicKey = sodium_crypto_sign_publickey($keyPair);
 
-        $valueAsArray = Ed25519Keypair::bin2array($publicKey);
-        $valueAsString = Ed25519Keypair::array2bin($valueAsArray);
+        $valueAsArray = Buffer::from($publicKey)->toArray();
+        $valueAsString = Buffer::from($valueAsArray)->toString();
 
         $this->assertEquals($publicKey, $valueAsString);
     }

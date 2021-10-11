@@ -5,8 +5,11 @@ namespace Tighten\SolanaPhpSdk;
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
 use Tighten\SolanaPhpSdk\Util\AccountMeta;
+use Tighten\SolanaPhpSdk\Util\Buffer;
 use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
+use Tighten\SolanaPhpSdk\Util\HasPublicKey;
+use Tighten\SolanaPhpSdk\Util\HasSecretKey;
 use Tighten\SolanaPhpSdk\Util\MessageHeader;
 use Tighten\SolanaPhpSdk\Util\NonceInformation;
 use Tighten\SolanaPhpSdk\Util\ShortVec;
@@ -120,8 +123,8 @@ class Transaction
 
         if ($this->feePayer) {
             $feePayer = $this->feePayer;
-        } elseif (sizeof($this->signatures) && $this->signatures[0]->publicKey) {
-            $feePayer = $this->signatures[0]->publicKey;
+        } elseif (sizeof($this->signatures) && $this->signatures[0]->getPublicKey()) {
+            $feePayer = $this->signatures[0]->getPublicKey();
         } else {
             throw new InputValidationException('Transaction fee payer required.');
         }
@@ -177,7 +180,7 @@ class Transaction
          */
         $uniqueMetas = [];
         foreach ($accountMetas as $accountMeta) {
-            $eachPublicKey = $accountMeta->publicKey;
+            $eachPublicKey = $accountMeta->getPublicKey();
             $uniqueIndex = $this->arraySearchAccountMetaForPublicKey($uniqueMetas, $eachPublicKey);
 
             if ($uniqueIndex > -1) {
@@ -204,7 +207,7 @@ class Transaction
             if ($uniqueIndex > -1) {
                 $uniqueMetas[$uniqueIndex]->isSigner = true;
             } else {
-                throw new InputValidationException("Unknown signer: {$signature->publicKey->toBase58()}");
+                throw new InputValidationException("Unknown signer: {$signature->getPublicKey()->toBase58()}");
             }
         }
 
@@ -224,13 +227,13 @@ class Transaction
 
         foreach ($uniqueMetas as $accountMeta) {
             if ($accountMeta->isSigner) {
-                array_push($signedKeys, $accountMeta->publicKey->toBase58());
+                array_push($signedKeys, $accountMeta->getPublicKey()->toBase58());
                 $numRequiredSignatures++;
                 if (! $accountMeta->isWritable) {
                     $numReadonlySignedAccounts++;
                 }
             } else {
-                array_push($unsignedKeys, $accountMeta->publicKey->toBase58());
+                array_push($unsignedKeys, $accountMeta->getPublicKey()->toBase58());
                 if (! $accountMeta->isWritable) {
                     $numReadonlyUnsignedAccounts++;
                 }
@@ -250,9 +253,9 @@ class Transaction
          */
         $instructions = array_map(function (TransactionInstruction $instruction) use ($accountKeys) {
             $programIdIndex = array_search($instruction->programId->toBase58(), $accountKeys);
-            $encodedData = PublicKey::base58()->encode(Ed25519Keypair::array2bin($instruction->data));
+            $encodedData = Buffer::from($instruction->data);
             $accounts = array_map(function (AccountMeta $meta) use ($accountKeys) {
-                return array_search($meta->publicKey->toBase58(), $accountKeys);
+                return array_search($meta->getPublicKey()->toBase58(), $accountKeys);
             }, $instruction->keys);
             return new CompiledInstruction(
                 $programIdIndex,
@@ -445,7 +448,7 @@ class Transaction
                     return false;
                 }
             } else {
-                if (! sodium_crypto_sign_verify_detached($signature->signature, $signData, $signature->publicKey->toBinaryString())) {
+                if (! sodium_crypto_sign_verify_detached($signature->signature, $signData, $signature->getPublicKey()->toBinaryString())) {
                     return false;
                 }
             }
@@ -481,12 +484,12 @@ class Transaction
             throw new InputValidationException('Too many signatures to encode.');
         }
 
-        $wireTransaction = [];
+        $wireTransaction = new Buffer();
 
         $signatureCount = ShortVec::encodeLength(sizeof($this->signatures));
 
         // Encode signature count
-        array_push($wireTransaction, ...$signatureCount);
+        $wireTransaction->push($signatureCount);
 
         // Encode signatures
         foreach ($this->signatures as $signature) {
@@ -495,14 +498,14 @@ class Transaction
             }
 
             if ($sig = $signature->signature) {
-                array_push($wireTransaction, ...Ed25519Keypair::bin2array($sig));
+                $wireTransaction->push($sig);
             } else {
-                array_push($wireTransaction, ...array_pad([], self::SIGNATURE_LENGTH, 0));
+                $wireTransaction->push(array_pad([], self::SIGNATURE_LENGTH, 0));
             }
         }
 
         // Encode signed data
-        array_push($wireTransaction, ...Ed25519Keypair::bin2array($signData));
+        $wireTransaction->push($signData);
 
         if (sizeof($wireTransaction) > self::PACKET_DATA_SIZE) {
             $actualSize = sizeof($wireTransaction);
@@ -510,7 +513,7 @@ class Transaction
             throw new GenericException("transaction too large: {$actualSize} > {$maxSize}");
         }
 
-        return Ed25519Keypair::array2bin($wireTransaction);
+        return $wireTransaction;
     }
 
     /**
@@ -521,15 +524,13 @@ class Transaction
      */
     public static function from($buffer): Transaction
     {
-        $buffer = is_string($buffer)
-            ? Ed25519Keypair::bin2array($buffer)
-            : $buffer;
+        $buffer = Buffer::from($buffer)->toArray();
 
         list($signatureCount, $offset) = ShortVec::decodeLength($buffer);
         $signatures = [];
         for ($i = 0; $i < $signatureCount; $i++) {
             $signature = array_slice($buffer, $offset, self::SIGNATURE_LENGTH);
-            array_push($signatures, PublicKey::base58()->encode(Ed25519Keypair::array2bin($signature)));
+            array_push($signatures, Buffer::from($signature)->toBase58String());
             $offset += self::SIGNATURE_LENGTH;
         }
 
@@ -557,9 +558,9 @@ class Transaction
         foreach ($signatures as $i => $signature) {
             array_push($transaction->signatures, new SignaturePubkeyPair(
                 $message->accountKeys[$i],
-                $signature === PublicKey::base58()->encode(Ed25519Keypair::array2bin(self::DEFAULT_SIGNATURE))
+                $signature === Buffer::from(self::DEFAULT_SIGNATURE)->toBase58String()
                 ? null
-                : PublicKey::base58()->decode($signature)
+                : Buffer::fromBase58($signature)->toString()
             ));
         }
 
@@ -575,7 +576,7 @@ class Transaction
             array_push($transaction->instructions, new TransactionInstruction(
                 $message->accountKeys[$instruction->programIdIndex],
                 $keys,
-                Ed25519Keypair::bin2array($instruction->data)
+                $instruction->data
             ));
         }
 
@@ -626,18 +627,10 @@ class Transaction
      */
     static protected function toPublicKey($source): PublicKey
     {
-        if ($source instanceof PublicKey) {
-            return $source;
-        } elseif ($source instanceof SignaturePubkeyPair) {
-            return $source->publicKey;
-        } elseif ($source instanceof AccountMeta) {
-            return $source->publicKey;
+        if ($source instanceof HasPublicKey) {
+            return $source->getPublicKey();
         } elseif (is_string($source)) {
             return new PublicKey($source);
-        } elseif ($source instanceof KeyPair) {
-            return $source->getPublicKey();
-        } elseif ($source instanceof Signer) {
-            return $source->publicKey;
         } else {
             throw new InputValidationException('Unsupported input: ' . get_class($source));
         }
@@ -646,14 +639,11 @@ class Transaction
     /**
      * @param $source
      * @return PublicKey
-     * @throws GenericException
      */
     protected function toSecretKey($source): string
     {
-        if ($source instanceof KeyPair) {
-            return Ed25519Keypair::array2bin($source->getSecretKey());
-        } elseif ($source instanceof Signer) {
-            return $source->secretKey;
+        if ($source instanceof HasSecretKey) {
+            return $source->getSecretKey();
         } else {
             throw new InputValidationException('Unsupported input: ' . get_class($source));
         }

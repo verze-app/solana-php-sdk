@@ -3,12 +3,15 @@
 namespace Tighten\SolanaPhpSdk;
 
 use SodiumException;
+use Tighten\SolanaPhpSdk\Util\Buffer;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
+use Tighten\SolanaPhpSdk\Util\HasPublicKey;
+use Tighten\SolanaPhpSdk\Util\HasSecretKey;
 
 /**
  * An account keypair used for signing transactions.
  */
-class KeyPair
+class KeyPair implements HasPublicKey, HasSecretKey
 {
     protected Ed25519Keypair $_keypair;
 
@@ -39,8 +42,10 @@ class KeyPair
      * @param $secretKey
      * @return KeyPair
      */
-    static public function fromSecretKey(string $secretKey): KeyPair
+    static public function fromSecretKey($secretKey): KeyPair
     {
+        $secretKey = Buffer::from($secretKey)->toString();
+
         $publicKey = sodium_crypto_sign_publickey_from_secretkey($secretKey);
 
         return new static(
@@ -57,9 +62,7 @@ class KeyPair
      */
     static public function fromSeed($seed): KeyPair
     {
-        $seed = is_string($seed)
-            ? $seed
-            : Ed25519Keypair::array2bin($seed);
+        $seed = Buffer::from($seed)->toString();
 
         $keyPair = sodium_crypto_sign_seed_keypair($seed);
 
@@ -81,10 +84,10 @@ class KeyPair
     /**
      * The raw secret key for this keypair
      *
-     * @return array
+     * @return Buffer
      */
-    public function getSecretKey(): array
+    public function getSecretKey(): Buffer
     {
-        return $this->_keypair->secretKey;
+        return Buffer::from($this->_keypair->secretKey);
     }
 }

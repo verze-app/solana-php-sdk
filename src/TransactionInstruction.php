@@ -3,6 +3,7 @@
 namespace Tighten\SolanaPhpSdk;
 
 use Tighten\SolanaPhpSdk\Util\AccountMeta;
+use Tighten\SolanaPhpSdk\Util\Buffer;
 
 class TransactionInstruction
 {
@@ -13,10 +14,10 @@ class TransactionInstruction
     public PublicKey $programId;
     public array $data;
 
-    public function __construct(PublicKey $programId, array $keys, array $data = [])
+    public function __construct(PublicKey $programId, array $keys, $data = [])
     {
         $this->programId = $programId;
         $this->keys = $keys;
-        $this->data = $data;
+        $this->data = Buffer::from($data)->toArray();
     }
 }

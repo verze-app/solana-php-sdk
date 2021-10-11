@@ -10,6 +10,7 @@ use Tighten\SolanaPhpSdk\Tests\TestCase;
 use Tighten\SolanaPhpSdk\Transaction;
 use Tighten\SolanaPhpSdk\TransactionInstruction;
 use Tighten\SolanaPhpSdk\Util\AccountMeta;
+use Tighten\SolanaPhpSdk\Util\Buffer;
 use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tighten\SolanaPhpSdk\Util\MessageHeader;
@@ -142,7 +143,7 @@ class TransactionTest extends TestCase
         );
 
         $this->assertCount(1, $transaction->signatures);
-        $this->assertEquals($payer->getPublicKey(), $transaction->signatures[0]->publicKey);
+        $this->assertEquals($payer->getPublicKey(), $transaction->signatures[0]->getPublicKey());
 
         $message = $transaction->compileMessage();
         $this->assertEquals($payer->getPublicKey(), $message->accountKeys[0]);
@@ -177,7 +178,7 @@ class TransactionTest extends TestCase
         );
 
         $this->assertCount(1, $transaction->signatures);
-        $this->assertEquals($payer->getPublicKey(), $transaction->signatures[0]->publicKey);
+        $this->assertEquals($payer->getPublicKey(), $transaction->signatures[0]->getPublicKey());
 
         $message = $transaction->compileMessage();
         $this->assertEquals($payer->getPublicKey(), $message->accountKeys[0]);
@@ -220,7 +221,7 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_parse_wire_format_and_serialize()
     {
-        $sender = KeyPair::fromSeed(Ed25519Keypair::array2bin([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8])); // Arbitrary known account
+        $sender = KeyPair::fromSeed([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]); // Arbitrary known account
         $recentBlockhash = 'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k'; // Arbitrary known recentBlockhash
         $recipient = new PublicKey('J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99'); // Arbitrary known public key
 
@@ -251,13 +252,13 @@ class TransactionTest extends TestCase
             ],
             $recentBlockhash,
             [
-                new CompiledInstruction(4, [1, 2, 3], PublicKey::base58()->encode(Ed25519Keypair::array2bin(array_pad([], 5, 9)))),
+                new CompiledInstruction(4, [1, 2, 3], Buffer::from(array_pad([], 5, 9))->toBase58String()),
             ],
         );
 
         $signatures = [
-            PublicKey::base58()->encode(Ed25519Keypair::array2bin(array_pad([], 64, 1))),
-            PublicKey::base58()->encode(Ed25519Keypair::array2bin(array_pad([], 64, 2))),
+            Buffer::from(array_pad([], 64, 1))->toBase58String(),
+            Buffer::from(array_pad([], 64, 2))->toBase58String(),
         ];
 
         $transaction = Transaction::populate($message, $signatures);
@@ -269,7 +270,7 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_serialize_unsigned_transaction()
     {
-        $sender = KeyPair::fromSeed(Ed25519Keypair::array2bin([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8])); // Arbitrary known account
+        $sender = KeyPair::fromSeed([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]); // Arbitrary known account
         $recentBlockhash = 'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k'; // Arbitrary known recentBlockhash
         $recipient = new PublicKey('J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99'); // Arbitrary known public key
 

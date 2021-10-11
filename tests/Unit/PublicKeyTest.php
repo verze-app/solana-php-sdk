@@ -16,7 +16,7 @@ class PublicKeyTest extends TestCase
 
         $this->assertEquals([
             23, 26, 218, 1, 26, 7, 253, 202, 19, 162, 251, 121, 172, 0, 65, 219, 142, 20, 252, 217, 6, 150, 142, 0, 54, 146, 245, 140, 155, 194, 42, 131,
-        ], $publicKey->toBuffer());
+        ], $publicKey->toBuffer()->toArray());
 
         $this->assertEquals('2ZC8EZduQGavJB9duMUgpdjNj7TQUiMawb52CLXBH5yc', $publicKey->toBase58());
     }
@@ -83,19 +83,19 @@ class PublicKeyTest extends TestCase
         $publicKey = new PublicKey('SeedPubey1111111111111111111111111111111111');
 
         $programAddress = PublicKey::createProgramAddress([
-            Ed25519Keypair::bin2array(''),
+            '',
             [1],
         ], $programId);
         $this->assertEquals(new PublicKey('3gF2KMe9KiC6FNVBmfg9i267aMPvK37FewCip4eGBFcT'), $programAddress);
 
         $programAddress = PublicKey::createProgramAddress([
-            Ed25519Keypair::bin2array('☉'),
+            '☉',
         ], $programId);
         $this->assertEquals(new PublicKey('7ytmC1nT1xY4RfxCV2ZgyA7UakC93do5ZdyhdF3EtPj7'), $programAddress);
 
         $programAddress = PublicKey::createProgramAddress([
-            Ed25519Keypair::bin2array('Talking'),
-            Ed25519Keypair::bin2array('Squirrels'),
+            'Talking',
+            'Squirrels',
         ], $programId);
         $this->assertEquals(new PublicKey('HwRVBufQ4haG5XSgpspwKtNd3PC9GM9m1196uJW36vds'), $programAddress);
 
@@ -111,13 +111,13 @@ class PublicKeyTest extends TestCase
         $programId = new PublicKey('BPFLoader1111111111111111111111111111111111');
 
         list($programAddress, $nonce) = PublicKey::findProgramAddress(
-            [Ed25519Keypair::bin2array('')],
+            [''],
             $programId
         );
 
         $this->assertEquals(
             PublicKey::createProgramAddress([
-                Ed25519Keypair::bin2array(''),
+                '',
                 [$nonce],
             ], $programId),
             $programAddress

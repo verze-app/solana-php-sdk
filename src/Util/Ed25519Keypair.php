@@ -6,8 +6,8 @@ use SodiumException;
 
 class Ed25519Keypair
 {
-    public array $publicKey;
-    public array $secretKey;
+    public Buffer $publicKey;
+    public Buffer $secretKey;
 
     /**
      * @param array|string $publicKey
@@ -15,12 +15,8 @@ class Ed25519Keypair
      */
     public function __construct($publicKey, $secretKey)
     {
-        $this->publicKey = is_string($publicKey)
-            ? static::bin2array($publicKey)
-            : $publicKey;
-        $this->secretKey = is_string($secretKey)
-            ? static::bin2array($secretKey)
-            : $secretKey;
+        $this->publicKey = Buffer::from($publicKey);
+        $this->secretKey = Buffer::from($secretKey);
     }
 
     /**
@@ -44,24 +40,5 @@ class Ed25519Keypair
             sodium_crypto_sign_publickey($keyPair),
             sodium_crypto_sign_secretkey($keyPair)
         );
-    }
-
-    /**
-     * @param string $bin
-     * @return array<integer>
-     */
-    public static function bin2array(string $bin): array
-    {
-        // for some reason, unpack return an array starting at index 1.
-        return array_values(unpack('C*', $bin));
-    }
-
-    /**
-     * @param array $array
-     * @return string
-     */
-    public static function array2bin(array $array): string
-    {
-        return pack('C*', ...$array);
     }
 }

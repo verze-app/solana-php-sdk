@@ -3,6 +3,7 @@
 namespace Tighten\SolanaPhpSdk;
 
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
+use Tighten\SolanaPhpSdk\Util\Buffer;
 use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tighten\SolanaPhpSdk\Util\MessageHeader;
@@ -106,16 +107,17 @@ class Message
      */
     public function serialize(): string
     {
-        $out = [
-            ...$this->encodeMessage(),
-            ...ShortVec::encodeLength(sizeof($this->instructions)),
-        ];
+        $out = new Buffer();
+
+        $out->push($this->encodeMessage())
+            ->push(ShortVec::encodeLength(sizeof($this->instructions)))
+        ;
 
         foreach ($this->instructions as $instruction) {
-            array_push($out, ...$this->encodeInstruction($instruction));
+            $out->push($this->encodeInstruction($instruction));
         }
 
-        return Ed25519Keypair::array2bin($out);
+        return $out;
     }
 
     /**
@@ -139,13 +141,13 @@ class Message
 
             ...ShortVec::encodeLength(sizeof($this->accountKeys)),
             ...$publicKeys,
-            ...Ed25519Keypair::bin2array(PublicKey::base58()->decode($this->recentBlockhash)),
+            ...Buffer::fromBase58($this->recentBlockhash)->toArray(),
         ];
     }
 
     protected function encodeInstruction(CompiledInstruction $instruction): array
     {
-        $data = Ed25519Keypair::bin2array(PublicKey::base58()->decode($instruction->data));
+        $data = Buffer::from($instruction->data);
 
         $accounts = $instruction->accounts;;
 
@@ -157,7 +159,7 @@ class Message
             ...$accounts,
 
             ...ShortVec::encodeLength(sizeof($data)),
-            ...$data,
+            ...$data->toArray(),
         ];
     }
 
@@ -186,7 +188,7 @@ class Message
         }
         $rawMessage = array_slice($rawMessage, $accountsOffset);
 
-        $recentBlockhash = PublicKey::base58()->encode(Ed25519Keypair::array2bin(array_slice($rawMessage, 0, PublicKey::LENGTH)));
+        $recentBlockhash = Buffer::from(array_slice($rawMessage, 0, PublicKey::LENGTH))->toBase58String();
         $rawMessage = array_slice($rawMessage, PublicKey::LENGTH);
 
         $instructions = [];
@@ -205,7 +207,7 @@ class Message
             $data = array_slice($rawMessage, 0, $dataLength);
             $rawMessage = array_slice($rawMessage, $dataLength);
 
-            array_push($instructions, new CompiledInstruction($programIdIndex, $accounts, Ed25519Keypair::array2bin($data)));
+            array_push($instructions, new CompiledInstruction($programIdIndex, $accounts, $data));
         }
 
         return new Message(

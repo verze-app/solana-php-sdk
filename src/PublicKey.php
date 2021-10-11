@@ -6,34 +6,40 @@ use SodiumException;
 use StephenHill\Base58;
 use Tighten\SolanaPhpSdk\Exceptions\BaseSolanaPhpSdkException;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
+use Tighten\SolanaPhpSdk\Util\Buffer;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
+use Tighten\SolanaPhpSdk\Util\HasPublicKey;
 
-class PublicKey
+class PublicKey implements HasPublicKey
 {
     const LENGTH = 32;
     const MAX_SEED_LENGTH = 32;
 
     /**
-     * @var array|false
+     * @var Buffer
      */
-    protected array $byteArray;
+    protected Buffer $byteArray;
 
     /**
      * @param array|string $bn
      */
     public function __construct($bn)
     {
-        if (is_string($bn)) {
-            $bn = $this->base58()->decode($bn);
-            $this->byteArray = array_values(unpack('C*', $bn)); // unpack index starts at 1. array_values to get it to 0.
-        } elseif (is_array($bn)) {
-            $this->byteArray = $bn;
-        } elseif ($bn instanceof PublicKey) {
-            $this->byteArray = $bn->byteArray;
-        } elseif (is_numeric($bn)) {
-            $this->byteArray = array_pad([], self::LENGTH, $bn);
+        if (is_integer($bn)) {
+            $this->byteArray = Buffer::from()->pad(self::LENGTH, $bn);
+        } elseif (is_string($bn)) {
+            // https://stackoverflow.com/questions/25343508/detect-if-string-is-binary
+            $isBinaryString = preg_match('~[^\x20-\x7E\t\r\n]~', $bn) > 0;
+
+            // if not binary string already, assumed to be a base58 string.
+            if ($isBinaryString) {
+                $this->byteArray = Buffer::from($bn);
+            } else {
+                $this->byteArray = Buffer::fromBase58($bn);
+            }
+
         } else {
-            throw new InputValidationException("Invalid PublicKey input.");
+            $this->byteArray = Buffer::from($bn);
         }
 
         if (sizeof($this->byteArray) !== self::LENGTH) {
@@ -63,8 +69,7 @@ class PublicKey
      */
     public function toBase58(): string
     {
-        $base58String = pack('C*', ...$this->byteArray);
-        return $this->base58()->encode($base58String);
+        return $this->base58()->encode($this->byteArray->toString());
     }
 
     /**
@@ -72,15 +77,15 @@ class PublicKey
      */
     public function toBytes(): array
     {
-        return $this->toBuffer();
+        return $this->byteArray->toArray();
     }
 
     /**
      * Return the Buffer representation of the public key
      */
-    public function toBuffer(): array
+    public function toBuffer(): Buffer
     {
-        return array_pad($this->byteArray, self::LENGTH, 0);
+        return $this->byteArray;
     }
 
     /**
@@ -88,7 +93,7 @@ class PublicKey
      */
     public function toBinaryString(): string
     {
-        return Ed25519Keypair::array2bin($this->byteArray);
+        return $this->byteArray;
     }
 
     /**
@@ -111,48 +116,46 @@ class PublicKey
      */
     public static function createWithSeed(PublicKey $fromPublicKey, string $seed, PublicKey $programId): PublicKey
     {
-        $buffer = [];
-        array_push($buffer,
-            ...$fromPublicKey->toBytes(),
-            ...Ed25519Keypair::bin2array($seed),
-            ...$programId->toBytes()
-        );
+        $buffer = new Buffer();
 
-        $hash = hash('sha256', Ed25519Keypair::array2bin($buffer));
+        $buffer->push($fromPublicKey)
+            ->push($seed)
+            ->push($programId)
+        ;
+
+        $hash = hash('sha256', $buffer);
         $binaryString = sodium_hex2bin($hash);
-        return new PublicKey(Ed25519Keypair::bin2array($binaryString));
+        return new PublicKey($binaryString);
     }
 
     /**
      * Derive a program address from seeds and a program ID.
      *
-     * @param array<array<integer>> $seeds
+     * @param array $seeds
      * @param PublicKey $programId
      * @return PublicKey
      */
     public static function createProgramAddress(array $seeds, PublicKey $programId): PublicKey
     {
-        $buffer = [];
+        $buffer = new Buffer();
         foreach ($seeds as $seed) {
+            $seed = Buffer::from($seed);
             if (sizeof($seed) > self::MAX_SEED_LENGTH) {
                 throw new InputValidationException("Max seed length exceeded.");
             }
-            array_push($buffer, ...$seed);
+            $buffer->push($seed);
         }
 
-        array_push($buffer,
-            ...$programId->toBytes(),
-            ...Ed25519Keypair::bin2array('ProgramDerivedAddress')
-        );
+        $buffer->push($programId)->push('ProgramDerivedAddress');
 
-        $hash = hash('sha256', Ed25519Keypair::array2bin($buffer));
+        $hash = hash('sha256', $buffer);
         $binaryString = sodium_hex2bin($hash);
 
         if (static::isOnCurve($binaryString)) {
             throw new InputValidationException('Invalid seeds, address must fall off the curve.');
         }
 
-        return new PublicKey(Ed25519Keypair::bin2array($binaryString));
+        return new PublicKey($binaryString);
     }
 
     /**
@@ -204,5 +207,10 @@ class PublicKey
     public static function base58(): Base58
     {
         return new Base58();
+    }
+
+    public function getPublicKey(): PublicKey
+    {
+        return $this;
     }
 }

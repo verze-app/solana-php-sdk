@@ -2,21 +2,22 @@
 
 namespace Tighten\SolanaPhpSdk;
 
+use Tighten\SolanaPhpSdk\Util\Buffer;
 use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
+use Tighten\SolanaPhpSdk\Util\HasPublicKey;
+use Tighten\SolanaPhpSdk\Util\HasSecretKey;
 
-class Account
+class Account implements HasPublicKey, HasSecretKey
 {
     protected KeyPair $keyPair;
 
     /**
-     * @param null|string|array $secretKey
+     * @param  $secretKey
      */
     public function __construct($secretKey = null)
     {
         if ($secretKey) {
-            $secretKeyString = is_string($secretKey)
-                ? $secretKey
-                : Ed25519Keypair::array2bin($secretKey);
+            $secretKeyString = Buffer::from($secretKey)->toString();
 
             $this->keyPair = KeyPair::fromSecretKey($secretKeyString);
         } else {
@@ -35,7 +36,7 @@ class Account
     /**
      * @return array
      */
-    public function getSecretKey(): array
+    public function getSecretKey(): Buffer
     {
         return $this->keyPair->getSecretKey();
     }
