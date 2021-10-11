@@ -253,7 +253,7 @@ class Transaction
          */
         $instructions = array_map(function (TransactionInstruction $instruction) use ($accountKeys) {
             $programIdIndex = array_search($instruction->programId->toBase58(), $accountKeys);
-            $encodedData = Buffer::from($instruction->data);
+            $encodedData = $instruction->data;
             $accounts = array_map(function (AccountMeta $meta) use ($accountKeys) {
                 return array_search($meta->getPublicKey()->toBase58(), $accountKeys);
             }, $instruction->keys);
@@ -524,17 +524,17 @@ class Transaction
      */
     public static function from($buffer): Transaction
     {
-        $buffer = Buffer::from($buffer)->toArray();
+        $buffer = Buffer::from($buffer);
 
         list($signatureCount, $offset) = ShortVec::decodeLength($buffer);
         $signatures = [];
         for ($i = 0; $i < $signatureCount; $i++) {
-            $signature = array_slice($buffer, $offset, self::SIGNATURE_LENGTH);
-            array_push($signatures, Buffer::from($signature)->toBase58String());
+            $signature = $buffer->slice($offset, self::SIGNATURE_LENGTH);
+            array_push($signatures, $signature->toBase58String());
             $offset += self::SIGNATURE_LENGTH;
         }
 
-        $buffer = array_slice($buffer, $offset);
+        $buffer = $buffer->slice($offset);
 
         return Transaction::populate(Message::from($buffer), $signatures);
     }

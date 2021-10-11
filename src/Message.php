@@ -147,7 +147,7 @@ class Message
 
     protected function encodeInstruction(CompiledInstruction $instruction): array
     {
-        $data = Buffer::from($instruction->data);
+        $data = $instruction->data;
 
         $accounts = $instruction->accounts;;
 
@@ -164,48 +164,50 @@ class Message
     }
 
     /**
-     * @param array $rawMessage
+     * @param array|Buffer $rawMessage
      * @return Message
      */
-    public static function from(array $rawMessage): Message
+    public static function from($rawMessage): Message
     {
+        $rawMessage = Buffer::from($rawMessage);
+
         $HEADER_OFFSET = 3;
         if (sizeof($rawMessage) < $HEADER_OFFSET) {
             throw new InputValidationException('Byte representation of message is missing message header.');
         }
 
-        $numRequiredSignatures = array_shift($rawMessage); //$rawMessage[0];
-        $numReadonlySignedAccounts = array_shift($rawMessage); //$rawMessage[1];
-        $numReadonlyUnsignedAccounts = array_shift($rawMessage); //$rawMessage[2];
+        $numRequiredSignatures = $rawMessage->shift();
+        $numReadonlySignedAccounts = $rawMessage->shift();
+        $numReadonlyUnsignedAccounts = $rawMessage->shift();
         $header = new MessageHeader($numRequiredSignatures, $numReadonlySignedAccounts, $numReadonlyUnsignedAccounts);
 
         $accountKeys = [];
         list($accountsLength, $accountsOffset) = ShortVec::decodeLength($rawMessage);
         for ($i = 0; $i < $accountsLength; $i++) {
-            $keyBytes = array_slice($rawMessage, $accountsOffset, PublicKey::LENGTH);
+            $keyBytes = $rawMessage->slice($accountsOffset, PublicKey::LENGTH);
             array_push($accountKeys, (new PublicKey($keyBytes))->toBase58());
             $accountsOffset += PublicKey::LENGTH;
         }
-        $rawMessage = array_slice($rawMessage, $accountsOffset);
+        $rawMessage = $rawMessage->slice($accountsOffset);
 
-        $recentBlockhash = Buffer::from(array_slice($rawMessage, 0, PublicKey::LENGTH))->toBase58String();
-        $rawMessage = array_slice($rawMessage, PublicKey::LENGTH);
+        $recentBlockhash = $rawMessage->slice(0, PublicKey::LENGTH)->toBase58String();
+        $rawMessage = $rawMessage->slice(PublicKey::LENGTH);
 
         $instructions = [];
         list($instructionCount, $offset) = ShortVec::decodeLength($rawMessage);
-        $rawMessage = array_slice($rawMessage, $offset);
+        $rawMessage = $rawMessage->slice($offset);
         for ($i = 0; $i < $instructionCount; $i++) {
-            $programIdIndex = array_shift($rawMessage); // $rawMessage[0];
+            $programIdIndex = $rawMessage->shift();
 
             list ($accountsLength, $offset) = ShortVec::decodeLength($rawMessage);
-            $rawMessage = array_slice($rawMessage, $offset);
-            $accounts = array_slice($rawMessage, 0, $accountsLength);
-            $rawMessage = array_slice($rawMessage, $accountsLength);
+            $rawMessage = $rawMessage->slice($offset);
+            $accounts = $rawMessage->slice(0, $accountsLength)->toArray();
+            $rawMessage = $rawMessage->slice($accountsLength);
 
             list ($dataLength, $offset) = ShortVec::decodeLength($rawMessage);
-            $rawMessage = array_slice($rawMessage, $offset);
-            $data = array_slice($rawMessage, 0, $dataLength);
-            $rawMessage = array_slice($rawMessage, $dataLength);
+            $rawMessage = $rawMessage->slice($offset);
+            $data = $rawMessage->slice(0, $dataLength);
+            $rawMessage = $rawMessage->slice($dataLength);
 
             array_push($instructions, new CompiledInstruction($programIdIndex, $accounts, $data));
         }

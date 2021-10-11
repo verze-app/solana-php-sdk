@@ -5,15 +5,17 @@ namespace Tighten\SolanaPhpSdk\Util;
 class ShortVec
 {
     /**
-     * @param array $bytes
+     * @param $buffer
      * @return array list($length, $size)
      */
-    public static function decodeLength(array $bytes): array
+    public static function decodeLength($buffer): array
     {
+        $buffer = Buffer::from($buffer)->toArray();
+
         $len = 0;
         $size = 0;
-        while ($size < sizeof($bytes)) {
-            $elem = $bytes[$size];
+        while ($size < sizeof($buffer)) {
+            $elem = $buffer[$size];
             $len |= ($elem & 0x7F) << ($size * 7);
             $size++;
             if (($elem & 0x80) == 0) {

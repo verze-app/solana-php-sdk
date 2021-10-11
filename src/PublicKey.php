@@ -7,7 +7,6 @@ use StephenHill\Base58;
 use Tighten\SolanaPhpSdk\Exceptions\BaseSolanaPhpSdkException;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
 use Tighten\SolanaPhpSdk\Util\Buffer;
-use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tighten\SolanaPhpSdk\Util\HasPublicKey;
 
 class PublicKey implements HasPublicKey
@@ -18,7 +17,7 @@ class PublicKey implements HasPublicKey
     /**
      * @var Buffer
      */
-    protected Buffer $byteArray;
+    protected Buffer $buffer;
 
     /**
      * @param array|string $bn
@@ -26,24 +25,24 @@ class PublicKey implements HasPublicKey
     public function __construct($bn)
     {
         if (is_integer($bn)) {
-            $this->byteArray = Buffer::from()->pad(self::LENGTH, $bn);
+            $this->buffer = Buffer::from()->pad(self::LENGTH, $bn);
         } elseif (is_string($bn)) {
             // https://stackoverflow.com/questions/25343508/detect-if-string-is-binary
             $isBinaryString = preg_match('~[^\x20-\x7E\t\r\n]~', $bn) > 0;
 
             // if not binary string already, assumed to be a base58 string.
             if ($isBinaryString) {
-                $this->byteArray = Buffer::from($bn);
+                $this->buffer = Buffer::from($bn);
             } else {
-                $this->byteArray = Buffer::fromBase58($bn);
+                $this->buffer = Buffer::fromBase58($bn);
             }
 
         } else {
-            $this->byteArray = Buffer::from($bn);
+            $this->buffer = Buffer::from($bn);
         }
 
-        if (sizeof($this->byteArray) !== self::LENGTH) {
-            $len = sizeof($this->byteArray);
+        if (sizeof($this->buffer) !== self::LENGTH) {
+            $len = sizeof($this->buffer);
             throw new InputValidationException("Invalid public key input. Expected length 32. Found: {$len}");
         }
     }
@@ -61,7 +60,7 @@ class PublicKey implements HasPublicKey
      */
     public function equals($publicKey): bool
     {
-        return $publicKey instanceof PublicKey && $publicKey->byteArray === $this->byteArray;
+        return $publicKey instanceof PublicKey && $publicKey->buffer === $this->buffer;
     }
 
     /**
@@ -69,7 +68,7 @@ class PublicKey implements HasPublicKey
      */
     public function toBase58(): string
     {
-        return $this->base58()->encode($this->byteArray->toString());
+        return $this->base58()->encode($this->buffer->toString());
     }
 
     /**
@@ -77,7 +76,7 @@ class PublicKey implements HasPublicKey
      */
     public function toBytes(): array
     {
-        return $this->byteArray->toArray();
+        return $this->buffer->toArray();
     }
 
     /**
@@ -85,7 +84,7 @@ class PublicKey implements HasPublicKey
      */
     public function toBuffer(): Buffer
     {
-        return $this->byteArray;
+        return $this->buffer;
     }
 
     /**
@@ -93,7 +92,7 @@ class PublicKey implements HasPublicKey
      */
     public function toBinaryString(): string
     {
-        return $this->byteArray;
+        return $this->buffer;
     }
 
     /**

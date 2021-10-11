@@ -252,7 +252,7 @@ class TransactionTest extends TestCase
             ],
             $recentBlockhash,
             [
-                new CompiledInstruction(4, [1, 2, 3], Buffer::from(array_pad([], 5, 9))->toBase58String()),
+                new CompiledInstruction(4, [1, 2, 3], Buffer::from(array_pad([], 5, 9))),
             ],
         );
 

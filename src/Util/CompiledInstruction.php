@@ -11,7 +11,7 @@ class CompiledInstruction
      * @var array<integer>
      */
     public array $accounts;
-    public string $data;
+    public Buffer $data;
 
     public function __construct(
         int $programIdIndex,

@@ -9,6 +9,9 @@ use Tighten\SolanaPhpSdk\PublicKey;
 
 class Buffer implements Countable
 {
+    /**
+     * @var array<int>
+     */
     protected array $data;
 
     /**
@@ -83,6 +86,22 @@ class Buffer implements Countable
         array_push($this->data, ...$sourceAsBuffer->toArray());
 
         return $this;
+    }
+
+    /**
+     * @return Buffer
+     */
+    public function slice(int $offset, ?int $length = null): Buffer
+    {
+        return static::from(array_slice($this->data, $offset, $length));
+    }
+
+    /**
+     * @return ?int
+     */
+    public function shift(): ?int
+    {
+        return array_shift($this->data);
     }
 
     /**
