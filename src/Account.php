@@ -3,7 +3,6 @@
 namespace Tighten\SolanaPhpSdk;
 
 use Tighten\SolanaPhpSdk\Util\Buffer;
-use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tighten\SolanaPhpSdk\Util\HasPublicKey;
 use Tighten\SolanaPhpSdk\Util\HasSecretKey;
 
@@ -21,7 +20,7 @@ class Account implements HasPublicKey, HasSecretKey
 
             $this->keyPair = KeyPair::fromSecretKey($secretKeyString);
         } else {
-            $this->keyPair = new KeyPair();
+            $this->keyPair = KeyPair::generate();
         }
     }
 

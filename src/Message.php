@@ -5,7 +5,6 @@ namespace Tighten\SolanaPhpSdk;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
 use Tighten\SolanaPhpSdk\Util\Buffer;
 use Tighten\SolanaPhpSdk\Util\CompiledInstruction;
-use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tighten\SolanaPhpSdk\Util\MessageHeader;
 use Tighten\SolanaPhpSdk\Util\ShortVec;
 

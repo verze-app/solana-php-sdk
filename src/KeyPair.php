@@ -4,7 +4,6 @@ namespace Tighten\SolanaPhpSdk;
 
 use SodiumException;
 use Tighten\SolanaPhpSdk\Util\Buffer;
-use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 use Tighten\SolanaPhpSdk\Util\HasPublicKey;
 use Tighten\SolanaPhpSdk\Util\HasSecretKey;
 
@@ -13,23 +12,47 @@ use Tighten\SolanaPhpSdk\Util\HasSecretKey;
  */
 class KeyPair implements HasPublicKey, HasSecretKey
 {
-    protected Ed25519Keypair $_keypair;
+    public Buffer $publicKey;
+    public Buffer $secretKey;
 
     /**
-     * @param Ed25519Keypair|null $keypair
-     * @throws SodiumException
+     * @param array|string $publicKey
+     * @param array|string $secretKey
      */
-    public function __construct(?Ed25519Keypair $keypair = null)
+    public function __construct($publicKey = null, $secretKey = null)
     {
-        $this->_keypair = $keypair ?? Ed25519Keypair::generate();
+        if ($publicKey == null && $secretKey == null) {
+            $keyPair = sodium_crypto_sign_keypair();
+
+            $publicKey = sodium_crypto_sign_publickey($keyPair);
+            $secretKey = sodium_crypto_sign_secretkey($keyPair);
+        }
+
+        $this->publicKey = Buffer::from($publicKey);
+        $this->secretKey = Buffer::from($secretKey);
     }
 
     /**
-     * Generate a new random keypair
+     * @throws SodiumException
      */
-    static function generate(): KeyPair
+    public static function generate(): KeyPair
     {
-        return new static();
+        $keyPair = sodium_crypto_sign_keypair();
+
+        return static::from($keyPair);
+    }
+
+    /**
+     * @param string $keyPair
+     * @return KeyPair
+     * @throws SodiumException
+     */
+    public static function from(string $keyPair): KeyPair
+    {
+        return new static(
+            sodium_crypto_sign_publickey($keyPair),
+            sodium_crypto_sign_secretkey($keyPair)
+        );
     }
 
     /**
@@ -49,7 +72,8 @@ class KeyPair implements HasPublicKey, HasSecretKey
         $publicKey = sodium_crypto_sign_publickey_from_secretkey($secretKey);
 
         return new static(
-            new Ed25519Keypair($publicKey, $secretKey)
+            $publicKey,
+            $secretKey
         );
     }
 
@@ -66,9 +90,7 @@ class KeyPair implements HasPublicKey, HasSecretKey
 
         $keyPair = sodium_crypto_sign_seed_keypair($seed);
 
-        return new static(
-            Ed25519Keypair::from($keyPair)
-        );
+        return static::from($keyPair);
     }
 
     /**
@@ -78,7 +100,7 @@ class KeyPair implements HasPublicKey, HasSecretKey
      */
     public function getPublicKey(): PublicKey
     {
-        return new PublicKey($this->_keypair->publicKey);
+        return new PublicKey($this->publicKey);
     }
 
     /**
@@ -88,6 +110,6 @@ class KeyPair implements HasPublicKey, HasSecretKey
      */
     public function getSecretKey(): Buffer
     {
-        return Buffer::from($this->_keypair->secretKey);
+        return Buffer::from($this->secretKey);
     }
 }

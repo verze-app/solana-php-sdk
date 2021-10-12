@@ -5,7 +5,6 @@ namespace Tighten\SolanaPhpSdk\Tests\Unit;
 use Tighten\SolanaPhpSdk\KeyPair;
 use Tighten\SolanaPhpSdk\PublicKey;
 use Tighten\SolanaPhpSdk\Tests\TestCase;
-use Tighten\SolanaPhpSdk\Util\Ed25519Keypair;
 
 class PublicKeyTest extends TestCase
 {
