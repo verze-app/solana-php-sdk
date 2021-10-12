@@ -329,9 +329,9 @@ class Transaction
      * The `signer` must be the corresponding `Keypair` for a `PublicKey` that was
      * previously provided to `signPartial`
      *
-     * @param KeyPair $signer
+     * @param Keypair $signer
      */
-    public function addSigner(KeyPair $signer)
+    public function addSigner(Keypair $signer)
     {
         $message = $this->compileMessage();
         $signData = $message->serialize();
@@ -353,7 +353,7 @@ class Transaction
      *
      * The Transaction must be assigned a valid `recentBlockhash` before invoking this method
      *
-     * @param array<Signer|KeyPair> $signers
+     * @param array<Signer|Keypair> $signers
      */
     public function sign(...$signers)
     {
@@ -367,7 +367,7 @@ class Transaction
      *
      * All the caveats from the `sign` method apply to `partialSign`
      *
-     * @param array<Signer|KeyPair> $signers
+     * @param array<Signer|Keypair> $signers
      */
     public function partialSign(...$signers)
     {
@@ -382,7 +382,7 @@ class Transaction
         $signData = $message->serialize();
 
         foreach ($uniqueSigners as $signer) {
-            if ($signer instanceof KeyPair) {
+            if ($signer instanceof Keypair) {
                 $signature = sodium_crypto_sign_detached($signData, $this->toSecretKey($signer));
                 if (strlen($signature) != self::SIGNATURE_LENGTH) {
                     throw new InputValidationException('Signature has invalid length.');

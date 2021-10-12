@@ -2,7 +2,7 @@
 
 namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
-use Tighten\SolanaPhpSdk\KeyPair;
+use Tighten\SolanaPhpSdk\Keypair;
 use Tighten\SolanaPhpSdk\Message;
 use Tighten\SolanaPhpSdk\Programs\SystemProgram;
 use Tighten\SolanaPhpSdk\PublicKey;
@@ -24,11 +24,11 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_account_keys_are_ordered()
     {
-        $payer = KeyPair::generate();
-        $account2 = KeyPair::generate();
-        $account3 = KeyPair::generate();
-        $recentBlockhash = KeyPair::generate()->getPublicKey()->toBase58();
-        $programId = KeyPair::generate()->getPublicKey();
+        $payer = Keypair::generate();
+        $account2 = Keypair::generate();
+        $account3 = Keypair::generate();
+        $recentBlockhash = Keypair::generate()->getPublicKey()->toBase58();
+        $programId = Keypair::generate()->getPublicKey();
         $transaction = new Transaction($recentBlockhash);
         $transaction->add(new TransactionInstruction($programId, [
             new AccountMeta($account3->getPublicKey(), true, false),
@@ -47,10 +47,10 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_payer_is_first_account_meta()
     {
-        $payer = KeyPair::generate();
-        $other = KeyPair::generate();
-        $recentBlockHash = KeyPair::generate()->getPublicKey()->toBase58();
-        $programId = KeyPair::generate()->getPublicKey();
+        $payer = Keypair::generate();
+        $other = Keypair::generate();
+        $recentBlockHash = Keypair::generate()->getPublicKey()->toBase58();
+        $programId = Keypair::generate()->getPublicKey();
         $transaction = new Transaction($recentBlockHash);
 
         $transaction->add(new TransactionInstruction(
@@ -73,9 +73,9 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_payer_is_writable()
     {
-        $payer = KeyPair::generate();
-        $recentBlockhash = KeyPair::generate()->getPublicKey()->toBase58();
-        $programId = KeyPair::generate()->getPublicKey();
+        $payer = Keypair::generate();
+        $recentBlockhash = Keypair::generate()->getPublicKey()->toBase58();
+        $programId = Keypair::generate()->getPublicKey();
         $transaction = new Transaction($recentBlockhash);
         $transaction->add(new TransactionInstruction($programId, [
             new AccountMeta($payer->getPublicKey(), true, false)
@@ -92,8 +92,8 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_partialSign()
     {
-        $account1 = KeyPair::generate();
-        $account2 = KeyPair::generate();
+        $account1 = Keypair::generate();
+        $account2 = Keypair::generate();
         $recentBlockhash = $account1->getPublicKey()->toBase58(); // Fake recentBlockhash
         $transfer = SystemProgram::transfer($account1->getPublicKey(), $account2->getPublicKey(), 123);
 
@@ -119,11 +119,11 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_dedupe_setSigners()
     {
-        $payer = KeyPair::generate();
+        $payer = Keypair::generate();
         $duplicate1 = $payer;
         $duplicate2 = $payer;
-        $recentBlockhash = KeyPair::generate()->getPublicKey()->toBase58();
-        $programId = KeyPair::generate()->getPublicKey();
+        $recentBlockhash = Keypair::generate()->getPublicKey()->toBase58();
+        $programId = Keypair::generate()->getPublicKey();
 
         $transaction = new Transaction($recentBlockhash);
         $transaction->add(new TransactionInstruction(
@@ -154,11 +154,11 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_dedupe_sign()
     {
-        $payer = KeyPair::generate();
+        $payer = Keypair::generate();
         $duplicate1 = $payer;
         $duplicate2 = $payer;
-        $recentBlockhash = KeyPair::generate()->getPublicKey()->toBase58();
-        $programId = KeyPair::generate()->getPublicKey();
+        $recentBlockhash = Keypair::generate()->getPublicKey()->toBase58();
+        $programId = Keypair::generate()->getPublicKey();
 
         $transaction = new Transaction($recentBlockhash);
         $transaction->add(new TransactionInstruction(
@@ -189,8 +189,8 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_transfer_signatures()
     {
-        $account1 = KeyPair::generate();
-        $account2 = KeyPair::generate();
+        $account1 = Keypair::generate();
+        $account2 = Keypair::generate();
         $recentBlockhash = $account1->getPublicKey()->toBase58(); // Fake recentBlockhash
 
         $transfer1 = SystemProgram::transfer($account1->getPublicKey(), $account2->getPublicKey(), 123);
@@ -209,9 +209,9 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_use_nonce()
     {
-        $account1 = KeyPair::generate();
-        $account2 = KeyPair::generate();
-        $nonceAccount = KeyPair::generate();
+        $account1 = Keypair::generate();
+        $account2 = Keypair::generate();
+        $nonceAccount = Keypair::generate();
         $nonce = $account2->getPublicKey()->toBase58(); // Fake Nonce hash
 
         $this->markTestSkipped('TODO once SystemProgram::nonceAdvance is implemented.');
@@ -220,7 +220,7 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_parse_wire_format_and_serialize()
     {
-        $sender = KeyPair::fromSeed([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]); // Arbitrary known account
+        $sender = Keypair::fromSeed([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]); // Arbitrary known account
         $recentBlockhash = 'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k'; // Arbitrary known recentBlockhash
         $recipient = new PublicKey('J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99'); // Arbitrary known public key
 
@@ -269,7 +269,7 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_serialize_unsigned_transaction()
     {
-        $sender = KeyPair::fromSeed([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]); // Arbitrary known account
+        $sender = Keypair::fromSeed([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]); // Arbitrary known account
         $recentBlockhash = 'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k'; // Arbitrary known recentBlockhash
         $recipient = new PublicKey('J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99'); // Arbitrary known public key
 
@@ -310,7 +310,7 @@ class TransactionTest extends TestCase
     /** @test */
     public function it_externally_signed_stake_delegate()
     {
-//        $authority = KeyPair::fromSeed(array_pad([], 32, 1));
+//        $authority = Keypair::fromSeed(array_pad([], 32, 1));
 //        $stake = new PublicKey(2);
 //        $recentBlockhash = new PublicKey(3);
 //        $vote = new PublicKey(4);

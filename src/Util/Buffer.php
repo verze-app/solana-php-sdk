@@ -4,7 +4,7 @@ namespace Tighten\SolanaPhpSdk\Util;
 
 use Countable;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
-use Tighten\SolanaPhpSdk\KeyPair;
+use Tighten\SolanaPhpSdk\Keypair;
 use Tighten\SolanaPhpSdk\PublicKey;
 
 class Buffer implements Countable

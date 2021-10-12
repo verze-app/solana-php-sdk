@@ -3,7 +3,7 @@
 namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
 use Tighten\SolanaPhpSdk\Account;
-use Tighten\SolanaPhpSdk\KeyPair;
+use Tighten\SolanaPhpSdk\Keypair;
 use Tighten\SolanaPhpSdk\Tests\TestCase;
 
 class AccountTest extends TestCase
@@ -35,7 +35,7 @@ class AccountTest extends TestCase
     public function it_account_keypair()
     {
         $expectedAccount = new Account();
-        $keypair = KeyPair::fromSecretKey($expectedAccount->getSecretKey());
+        $keypair = Keypair::fromSecretKey($expectedAccount->getSecretKey());
 
         $derivedAccount = new Account($keypair->getSecretKey());
         $this->assertEquals($expectedAccount->getPublicKey(), $derivedAccount->getPublicKey());

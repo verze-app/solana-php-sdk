@@ -2,7 +2,7 @@
 
 namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
-use Tighten\SolanaPhpSdk\KeyPair;
+use Tighten\SolanaPhpSdk\Keypair;
 use Tighten\SolanaPhpSdk\PublicKey;
 use Tighten\SolanaPhpSdk\Tests\TestCase;
 
@@ -126,7 +126,7 @@ class PublicKeyTest extends TestCase
     /** @test */
     public function it_isOnCurve()
     {
-        $onCurvePublicKey = KeyPair::generate()->getPublicKey();
+        $onCurvePublicKey = Keypair::generate()->getPublicKey();
         $this->assertTrue(PublicKey::isOnCurve($onCurvePublicKey));
 
         // A program address, yanked from one of the above tests. This is a pretty

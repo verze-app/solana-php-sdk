@@ -8,7 +8,7 @@ use Tighten\SolanaPhpSdk\Util\HasSecretKey;
 
 class Account implements HasPublicKey, HasSecretKey
 {
-    protected KeyPair $keyPair;
+    protected Keypair $keypair;
 
     /**
      * @param  $secretKey
@@ -18,9 +18,9 @@ class Account implements HasPublicKey, HasSecretKey
         if ($secretKey) {
             $secretKeyString = Buffer::from($secretKey)->toString();
 
-            $this->keyPair = KeyPair::fromSecretKey($secretKeyString);
+            $this->keypair = Keypair::fromSecretKey($secretKeyString);
         } else {
-            $this->keyPair = KeyPair::generate();
+            $this->keypair = Keypair::generate();
         }
     }
 
@@ -29,7 +29,7 @@ class Account implements HasPublicKey, HasSecretKey
      */
     public function getPublicKey(): PublicKey
     {
-        return $this->keyPair->getPublicKey();
+        return $this->keypair->getPublicKey();
     }
 
     /**
@@ -37,6 +37,6 @@ class Account implements HasPublicKey, HasSecretKey
      */
     public function getSecretKey(): Buffer
     {
-        return $this->keyPair->getSecretKey();
+        return $this->keypair->getSecretKey();
     }
 }

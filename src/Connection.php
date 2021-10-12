@@ -63,14 +63,14 @@ class Connection extends Program
 
     /**
      * @param Transaction $transaction
-     * @param KeyPair $signer
+     * @param Keypair $signer
      * @param array $params
      * @return array|\Illuminate\Http\Client\Response
      * @throws Exceptions\GenericException
      * @throws Exceptions\InvalidIdResponseException
      * @throws Exceptions\MethodNotFoundException
      */
-    public function sendTransaction(Transaction $transaction, KeyPair $signer, $params = [])
+    public function sendTransaction(Transaction $transaction, Keypair $signer, $params = [])
     {
         if (! $transaction->recentBlockhash) {
             $transaction->recentBlockhash = $this->getRecentBlockhash()['blockhash'];
