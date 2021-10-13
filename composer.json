@@ -18,6 +18,12 @@
             "email": "matt@tighten.co",
             "homepage": "https://tighten.co",
             "role": "Developer"
+        },
+        {
+            "name": "Zach Vander Velden",
+            "email": "zachvv11@gmail.com",
+            "homepage": "https://zachvv.me",
+            "role": "Developer"
         }
     ],
     "require": {

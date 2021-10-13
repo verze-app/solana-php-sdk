@@ -72,6 +72,7 @@ If you discover any security related issues, please email hello@tighten.co inste
 ## Credits
 
 - [Matt Stauffer](https://github.com/mattstauffer)
+- [Zach Vander Velden](https://github.com/exzachlyvv)
 - [All Contributors](../../contributors)
 
 ## License
