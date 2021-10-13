@@ -33,6 +33,7 @@ class Keypair implements HasPublicKey, HasSecretKey
     }
 
     /**
+     * @return Keypair
      * @throws SodiumException
      */
     public static function generate(): Keypair

@@ -33,7 +33,7 @@ class Account implements HasPublicKey, HasSecretKey
     }
 
     /**
-     * @return array
+     * @return Buffer
      */
     public function getSecretKey(): Buffer
     {

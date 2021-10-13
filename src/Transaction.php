@@ -643,8 +643,11 @@ class Transaction
     }
 
     /**
+     * Pulls out the secret key and casts it to a string.
+     *
      * @param $source
-     * @return PublicKey
+     * @return string
+     * @throws InputValidationException
      */
     protected function toSecretKey($source): string
     {
