@@ -276,6 +276,13 @@ class Transaction
     }
 
     /**
+     * The Python library takes a little different approach to their implementation of Transaction. It seems simpler to me
+     * and does not involve the compile method from the JS library. An early implementation of this class used this in a
+     * 1 to 1 port of the Javascript library, however as I iterated I went away from that.
+     *
+     * TODO: Keep this around for a few weeks and delete once we are sure all the kinks with the current implementation
+     * have been worked out.
+     *
      * @return Message
      */
 //    protected function compile(): Message
