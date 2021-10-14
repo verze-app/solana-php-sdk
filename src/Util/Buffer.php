@@ -4,8 +4,8 @@ namespace Tighten\SolanaPhpSdk\Util;
 
 use Countable;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
-use Tighten\SolanaPhpSdk\Keypair;
 use Tighten\SolanaPhpSdk\PublicKey;
+use SplFixedArray;
 
 class Buffer implements Countable
 {
@@ -79,9 +79,13 @@ class Buffer implements Countable
      * @param $source
      * @return $this
      */
-    public function push($source): Buffer
+    public function push($source, ?int $fixedSize = null): Buffer
     {
         $sourceAsBuffer = Buffer::from($source);
+
+        if ($fixedSize != null) {
+            $sourceAsBuffer->fixed($fixedSize);
+        }
 
         array_push($this->data, ...$sourceAsBuffer->toArray());
 
@@ -102,6 +106,18 @@ class Buffer implements Countable
     public function shift(): ?int
     {
         return array_shift($this->data);
+    }
+
+    /**
+     * @return $this
+     */
+    public function fixed(int $size): Buffer
+    {
+        $fixedSizeData = SplFixedArray::fromArray($this->data);
+        $fixedSizeData->setSize($size);
+        $this->data = $fixedSizeData->toArray();
+
+        return $this;
     }
 
     /**
