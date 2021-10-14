@@ -1,9 +1,9 @@
 <?php
 
-namespace Tighten\SolanaPhpSdk\Tests;
+namespace Tighten\SolanaPhpSdk\Tests\Feature;
 
-use PHPUnit\Framework\TestCase;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
+use Tighten\SolanaPhpSdk\Tests\TestCase;
 
 class SolanaRpcClientTest extends TestCase
 {
