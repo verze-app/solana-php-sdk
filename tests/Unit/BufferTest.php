@@ -9,10 +9,10 @@ use Tighten\SolanaPhpSdk\PublicKey;
 use Tighten\SolanaPhpSdk\Tests\TestCase;
 use Tighten\SolanaPhpSdk\Util\Buffer;
 
-class BufferableTest extends TestCase
+class BufferTest extends TestCase
 {
     /** @test */
-    public function it_bufferable()
+    public function it_buffer_push_fixed_length()
     {
         $lamports = 4;
         $space = 6;
@@ -29,8 +29,13 @@ class BufferableTest extends TestCase
             ...$programId->toBytes(),
         ];
 
+        $bufferable = Buffer::from()
+            ->push(SystemProgram::PROGRAM_INDEX_CREATE_ACCOUNT, 4)
+            ->push($lamports, 8)
+            ->push($space, 8)
+            ->push($programId)
+        ;
 
-//        $bufferable = Buffer::from()
-//            ->push()
+        $this->assertEquals($rawCreateAccountBinary, $bufferable->toArray());
     }
 }

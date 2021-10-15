@@ -4,11 +4,24 @@ namespace Tighten\SolanaPhpSdk\Util;
 
 use Countable;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
+use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\PublicKey;
 use SplFixedArray;
 
+/**
+ * A convenient wrapper class around an array of bytes (int's).
+ */
 class Buffer implements Countable
 {
+    const FORMAT_SIGNED_CHAR = 'c';
+    const FORMAT_UNSIGNED_CHAR = 'C';
+    const FORMAT_SHORT_16_SIGNED = 's';
+    const FORMAT_SHORT_16_UNSIGNED = 'v';
+    const FORMAT_LONG_32_SIGNED = 'l';
+    const FORMAT_LONG_32_UNSIGNED = 'V';
+    const FORMAT_LONG_LONG_64_SIGNED = 'q';
+    const FORMAT_LONG_LONG_64_UNSIGNED = 'P';
+
     /**
      * @var array<int>
      */
@@ -101,6 +114,14 @@ class Buffer implements Countable
     }
 
     /**
+     * @return Buffer
+     */
+    public function splice(int $offset, ?int $length = null): Buffer
+    {
+        return static::from(array_splice($this->data, $offset, $length));
+    }
+
+    /**
      * @return ?int
      */
     public function shift(): ?int
@@ -166,5 +187,38 @@ class Buffer implements Countable
     public function __toString()
     {
         return pack('C*', ...$this->toArray());
+    }
+
+    /**
+     * Convert the binary array to an int.
+     *
+     * Note: it is expected that the ->fixed($length) method has already been called.
+     *
+     * @return int
+     */
+    public function toInt(?int $length = null): int
+    {
+        if ($length) {
+            $this->fixed($length);
+        }
+
+        $size = sizeof($this);
+
+        switch ($size) {
+            case 1: return $this->to(self::FORMAT_UNSIGNED_CHAR);
+            case 2: return $this->to(self::FORMAT_SHORT_16_UNSIGNED);
+            case 4: return $this->to(self::FORMAT_LONG_32_UNSIGNED);
+            case 8: return $this->to(self::FORMAT_LONG_LONG_64_SIGNED);
+            default: throw new TodoException("Large numbers that exceed PHP limits are not yet supported.");
+        }
+    }
+
+    /**
+     * @param $format
+     * @return false|int|string
+     */
+    protected function to($format)
+    {
+        return ord(pack("{$format}*", ...$this->toArray()));
     }
 }
