@@ -135,7 +135,11 @@ class Borsh
         }
 
         if ($objectSchema['kind'] === 'struct') {
-            $result = new $class;
+            if (! method_exists($class, 'borshConstructor')) {
+                throw new BorshException("Class {$class} does not implement borshConstructor. Please use the BorshDeserialize trait.");
+            }
+
+            $result = $class::borshConstructor();
             foreach ($objectSchema['fields'] as list($fieldName, $fieldType)) {
                 $result->{$fieldName} = static::deserializeField($schema, $fieldName, $fieldType, $reader);
             }

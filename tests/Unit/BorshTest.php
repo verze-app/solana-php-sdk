@@ -16,12 +16,33 @@ class Test {
     public $b;
     public $c;
     public $q;
-    private $m;
+}
 
-    public function __construct() {}
+class TestWithPrivateVariable {
+    use BorshObject;
+
+    private $m;
 
     public function setM($m) {$this->m = $m;}
     public function getM() {return $this->m;}
+}
+
+class TestWithConstructorParameters {
+    use BorshObject;
+
+    private $m;
+
+    public function __construct($m)
+    {
+        $this->m = $m;
+    }
+
+    public function getM() {return $this->m;}
+
+    public static function borshConstructor()
+    {
+        return new static(null);
+    }
 }
 
 class BorshTest extends TestCase
@@ -119,11 +140,11 @@ class BorshTest extends TestCase
     /** @test */
     public function it_serialize_deserialize_invisible_properties()
     {
-        $value = new Test();
+        $value = new TestWithPrivateVariable();
         $value->setM(255);
 
         $schema = [
-            Test::class => [
+            TestWithPrivateVariable::class => [
                 'kind' => 'struct',
                 'fields' => [
                     ['m', 'u8'],
@@ -132,9 +153,30 @@ class BorshTest extends TestCase
         ];
 
         $buffer = Borsh::serialize($schema, $value);
-        $newValue = Borsh::deserialize($schema, Test::class, $buffer);
+        $newValue = Borsh::deserialize($schema, TestWithPrivateVariable::class, $buffer);
 
-        $this->assertInstanceOf(Test::class, $newValue);
+        $this->assertInstanceOf(TestWithPrivateVariable::class, $newValue);
+        $this->assertEquals(255, $newValue->getM());
+    }
+
+    /** @test */
+    public function it_serialize_deserialize_handles_constructor_with_parameters()
+    {
+        $value = new TestWithConstructorParameters(255);
+
+        $schema = [
+            TestWithConstructorParameters::class => [
+                'kind' => 'struct',
+                'fields' => [
+                    ['m', 'u8'],
+                ],
+            ],
+        ];
+
+        $buffer = Borsh::serialize($schema, $value);
+        $newValue = Borsh::deserialize($schema, TestWithConstructorParameters::class, $buffer);
+
+        $this->assertInstanceOf(TestWithConstructorParameters::class, $newValue);
         $this->assertEquals(255, $newValue->getM());
     }
 }
