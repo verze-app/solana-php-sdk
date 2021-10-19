@@ -22,10 +22,7 @@ class BinaryReader
      */
     public function readU8(): int
     {
-        $valueArray = $this->buffer->slice($this->offset, 1);
-        $value = $valueArray->toInt();
-        $this->offset += 1;
-        return $value;
+        return $this->readUnsignedInt(1, Buffer::TYPE_BYTE);
     }
 
     /**
@@ -33,10 +30,7 @@ class BinaryReader
      */
     public function readU16(): int
     {
-        $valueArray = $this->buffer->slice($this->offset, 2);
-        $value = $valueArray->toInt();
-        $this->offset += 2;
-        return $value;
+        return $this->readUnsignedInt(2, Buffer::TYPE_SHORT);
     }
 
     /**
@@ -44,10 +38,7 @@ class BinaryReader
      */
     public function readU32(): int
     {
-        $valueArray = $this->buffer->slice($this->offset, 4);
-        $value = $valueArray->toInt();
-        $this->offset += 4;
-        return $value;
+        return $this->readUnsignedInt(4, Buffer::TYPE_INT);
     }
 
     /**
@@ -55,42 +46,80 @@ class BinaryReader
      */
     public function readU64(): int
     {
-        $valueArray = $this->buffer->slice($this->offset, 8);
-        $value = $valueArray->toInt();
+        return $this->readUnsignedInt(8, Buffer::TYPE_LONG);
+    }
+
+    /**
+     * @return int
+     */
+    public function readI8(): int
+    {
+        return $this->readSignedInt(1, Buffer::TYPE_BYTE);
+    }
+
+    /**
+     * @return int
+     */
+    public function readI16(): int
+    {
+        return $this->readSignedInt(2, Buffer::TYPE_SHORT);
+    }
+
+    /**
+     * @return int
+     */
+    public function readI32(): int
+    {
+        return $this->readSignedInt(4, Buffer::TYPE_INT);
+    }
+
+    /**
+     * @return int
+     */
+    public function readI64(): int
+    {
+        return $this->readSignedInt(8, Buffer::TYPE_LONG);
+    }
+
+    /**
+     * @param $length
+     * @return int
+     */
+    protected function readUnsignedInt($length, $datatype): int
+    {
+        $value = $this->buffer->slice($this->offset, $length, $datatype, false)->value();
+        $this->offset += $length;
+        return $value;
+    }
+
+    /**
+     * @param $length
+     * @return int
+     */
+    protected function readSignedInt($length, $datatype): int
+    {
+        $value = $this->buffer->slice($this->offset, $length, $datatype, true)->value();
+        $this->offset += $length;
+        return $value;
+    }
+
+    /**
+     * @return float
+     */
+    public function readF32(): float
+    {
+        $value = $this->buffer->slice($this->offset, 4, Buffer::TYPE_FLOAT, true)->value();
+        $this->offset += 4;
+        return $value;
+    }
+
+    /**
+     * @return float
+     */
+    public function readF64(): float
+    {
+        $value = $this->buffer->slice($this->offset, 8, Buffer::TYPE_FLOAT, true)->value();
         $this->offset += 8;
-        return $value;
-    }
-
-    /**
-     * @return int
-     */
-    public function readU128(): int
-    {
-        $valueArray = $this->buffer->slice($this->offset, 16);
-        $value = $valueArray->toInt();
-        $this->offset += 16;
-        return $value;
-    }
-
-    /**
-     * @return int
-     */
-    public function readU256(): int
-    {
-        $valueArray = $this->buffer->slice($this->offset, 32);
-        $value = $valueArray->toInt();
-        $this->offset += 32;
-        return $value;
-    }
-
-    /**
-     * @return int
-     */
-    public function readU512(): int
-    {
-        $valueArray = $this->buffer->slice($this->offset, 64);
-        $value = $valueArray->toInt();
-        $this->offset += 64;
         return $value;
     }
 
@@ -101,8 +130,7 @@ class BinaryReader
     public function readString(): string
     {
         $length = $this->readU32();
-        $buffer = $this->readBuffer($length);
-        return pack('C*', ...$buffer->toArray());
+        return $this->readBuffer($length);
     }
 
     /**
@@ -116,7 +144,6 @@ class BinaryReader
 
     /**
      * @return array
-     * @throws TodoException
      */
     public function readArray(Closure $readEachItem): array
     {

@@ -9,6 +9,9 @@ class Test {
     public $x;
     public $y;
     public $z;
+    public $a;
+    public $b;
+    public $c;
     public $q;
 
     public function __construct() {}
@@ -23,6 +26,9 @@ class BorshTest extends TestCase
         $value->x = 255;
         $value->y = 20;
         $value->z = '123';
+        $value->a = 12.987;
+        $value->b = -121;
+        $value->c = -20;
         $value->q = [1, 2, 3];
 
         $schema = [
@@ -32,6 +38,9 @@ class BorshTest extends TestCase
                     ['x', 'u8'],
                     ['y', 'u64'],
                     ['z', 'string'],
+                    ['a', 'f64'],
+                    ['b', 'i32'],
+                    ['c', 'i8'],
                     ['q', [3]],
                 ],
             ],
@@ -44,37 +53,9 @@ class BorshTest extends TestCase
         $this->assertEquals(255, $newValue->x);
         $this->assertEquals(20, $newValue->y);
         $this->assertEquals('123', $newValue->z);
-        $this->assertEquals([1, 2, 3], $newValue->q);
-    }
-
-    /** @test */
-    public function it_serialize_nested()
-    {
-        $child = new Test();
-        $child->q = [1, 2, 4];
-
-        $parent = new Test();
-        $parent->x = 255;
-        $parent->y = $child;
-
-        $schema = [
-            Test::class => [
-                'kind' => 'struct',
-                'fields' => [
-                    ['x', 'u8'],
-                    ['y', Test::class],
-                    ['q', [3]],
-                ],
-            ],
-        ];
-
-        $buffer = Borsh::serialize($schema, $parent);
-        $newValue = Borsh::deserialize($schema, Test::class, $buffer);
-
-        $this->assertInstanceOf(Test::class, $newValue);
-        $this->assertEquals(255, $newValue->x);
-        $this->assertEquals(20, $newValue->y);
-        $this->assertEquals('123', $newValue->z);
+        $this->assertEquals(12.987, $newValue->a);
+        $this->assertEquals(-121, $newValue->b);
+        $this->assertEquals(-20, $newValue->c);
         $this->assertEquals([1, 2, 3], $newValue->q);
     }
 

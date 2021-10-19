@@ -13,14 +13,22 @@ use SplFixedArray;
  */
 class Buffer implements Countable
 {
-    const FORMAT_SIGNED_CHAR = 'c';
-    const FORMAT_UNSIGNED_CHAR = 'C';
+    const TYPE_STRING = 'string';
+    const TYPE_BYTE = 'byte';
+    const TYPE_SHORT = 'short';
+    const TYPE_INT = 'int';
+    const TYPE_LONG = 'long';
+    const TYPE_FLOAT = 'float';
+
+    const FORMAT_CHAR_SIGNED = 'c';
+    const FORMAT_CHAR_UNSIGNED = 'C';
     const FORMAT_SHORT_16_SIGNED = 's';
     const FORMAT_SHORT_16_UNSIGNED = 'v';
     const FORMAT_LONG_32_SIGNED = 'l';
     const FORMAT_LONG_32_UNSIGNED = 'V';
     const FORMAT_LONG_LONG_64_SIGNED = 'q';
     const FORMAT_LONG_LONG_64_UNSIGNED = 'P';
+    const FORMAT_FLOAT = 'e';
 
     /**
      * @var array<int>
@@ -28,21 +36,42 @@ class Buffer implements Countable
     protected array $data;
 
     /**
+     * @var bool is this a signed or unsigned value?
+     */
+    protected ?bool $signed = null;
+
+    /**
+     * @var ?string $datatype
+     */
+    protected ?string $datatype = null;
+
+    /**
      * @param mixed $value
      */
-    public function __construct($value = null)
+    public function __construct($value = null, ?string $datatype = null, ?bool $signed = null)
     {
-        if (is_string($value)) {
+        $this->datatype = $datatype;
+        $this->signed = $signed;
+
+        $isString = is_string($value);
+        $isNumeric = is_numeric($value);
+
+        if ($isString || $isNumeric) {
+            $this->datatype = $datatype;
+            $this->signed = $signed;
+
             // unpack returns an array indexed at 1.
-            $this->data = array_values(unpack('C*', $value));
+            $this->data = $isString
+                ? array_values(unpack("C*", $value))
+                : array_values(unpack("C*", pack($this->computedFormat(), $value)));
         } elseif (is_array($value)) {
             $this->data = $value;
-        } elseif (is_numeric($value)) {
-            $this->data = [$value];
         } elseif ($value instanceof PublicKey) {
             $this->data = $value->toBytes();
         } elseif ($value instanceof Buffer) {
             $this->data = $value->toArray();
+            $this->datatype = $value->datatype;
+            $this->signed = $value->signed;
         } elseif ($value == null) {
             $this->data = [];
         } elseif (method_exists($value, 'toArray')) {
@@ -58,9 +87,9 @@ class Buffer implements Countable
      * @param $value
      * @return Buffer
      */
-    public static function from($value = null): Buffer
+    public static function from($value = null, ?string $format = null, ?bool $signed = null): Buffer
     {
-        return new static($value);
+        return new static($value, $format, $signed);
     }
 
     /**
@@ -108,9 +137,9 @@ class Buffer implements Countable
     /**
      * @return Buffer
      */
-    public function slice(int $offset, ?int $length = null): Buffer
+    public function slice(int $offset, ?int $length = null, ?string $format = null, ?bool $signed = null): Buffer
     {
-        return static::from(array_slice($this->data, $offset, $length));
+        return static::from(array_slice($this->data, $offset, $length), $format, $signed);
     }
 
     /**
@@ -190,35 +219,44 @@ class Buffer implements Countable
     }
 
     /**
-     * Convert the binary array to an int.
+     * Convert the binary array to its corresponding value derived from $datatype, $signed, and sizeof($data).
      *
      * Note: it is expected that the ->fixed($length) method has already been called.
      *
-     * @return int
+     * @return mixed
      */
-    public function toInt(?int $length = null): int
+    public function value(?int $length = null)
     {
         if ($length) {
             $this->fixed($length);
         }
 
-        $size = sizeof($this);
-
-        switch ($size) {
-            case 1: return $this->to(self::FORMAT_UNSIGNED_CHAR);
-            case 2: return $this->to(self::FORMAT_SHORT_16_UNSIGNED);
-            case 4: return $this->to(self::FORMAT_LONG_32_UNSIGNED);
-            case 8: return $this->to(self::FORMAT_LONG_LONG_64_SIGNED);
-            default: throw new TodoException("Large numbers that exceed PHP limits are not yet supported.");
+        if ($this->datatype === self::TYPE_STRING) {
+            return ord(pack("C*", ...$this->toArray()));
+        } else {
+            return unpack($this->computedFormat(), pack("C*", ...$this->toArray()))[1];
         }
     }
 
     /**
-     * @param $format
-     * @return false|int|string
+     * @return string
+     * @throws InputValidationException
      */
-    protected function to($format)
+    protected function computedFormat()
     {
-        return ord(pack("{$format}*", ...$this->toArray()));
+        if (! $this->datatype) {
+            throw new InputValidationException('Trying to calculate format of unspecified buffer. Please specify a datatype.');
+        }
+
+        switch ($this->datatype) {
+            case self::TYPE_STRING: return self::FORMAT_CHAR_UNSIGNED;
+            case self::TYPE_BYTE: return $this->signed ? self::FORMAT_CHAR_SIGNED : self::FORMAT_CHAR_UNSIGNED;
+            case self::TYPE_SHORT: return $this->signed ? self::FORMAT_SHORT_16_SIGNED : self::FORMAT_SHORT_16_UNSIGNED;
+            case self::TYPE_INT: return $this->signed ? self::FORMAT_LONG_32_SIGNED : self::FORMAT_LONG_32_UNSIGNED;
+            case self::TYPE_LONG: return $this->signed ? self::FORMAT_LONG_LONG_64_SIGNED : self::FORMAT_LONG_LONG_64_UNSIGNED;
+            case self::TYPE_FLOAT: return self::FORMAT_FLOAT;
+            default: throw new InputValidationException("Unsupported datatype.");
+        }
     }
+
 }

@@ -23,9 +23,7 @@ class BinaryWriter
      */
     public function writeU8(int $value)
     {
-        $this->buffer->push($value, 1);
-        $this->length += 1;
-        return $this;
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_BYTE, false));
     }
 
     /**
@@ -34,9 +32,7 @@ class BinaryWriter
      */
     public function writeU16(int $value)
     {
-        $this->buffer->push($value, 2);
-        $this->length += 2;
-        return $this;
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_SHORT, false));
     }
 
     /**
@@ -45,9 +41,7 @@ class BinaryWriter
      */
     public function writeU32(int $value)
     {
-        $this->buffer->push($value, 4);
-        $this->length += 4;
-        return $this;
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_INT, false));
     }
 
     /**
@@ -56,42 +50,61 @@ class BinaryWriter
      */
     public function writeU64(int $value)
     {
-        $this->buffer->push($value, 8);
-        $this->length += 8;
-        return $this;
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_LONG, false));
     }
 
     /**
      * @param int $value
      * @return $this
      */
-    public function writeU128(int $value)
+    public function writeI8(int $value)
     {
-        $this->buffer->push($value, 16);
-        $this->length += 16;
-        return $this;
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_BYTE, true));
     }
 
     /**
      * @param int $value
      * @return $this
      */
-    public function writeU256(int $value)
+    public function writeI16(int $value)
     {
-        $this->buffer->push($value, 32);
-        $this->length += 32;
-        return $this;
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_SHORT, true));
     }
 
     /**
      * @param int $value
      * @return $this
      */
-    public function writeU512(int $value)
+    public function writeI32(int $value)
     {
-        $this->buffer->push($value, 64);
-        $this->length += 64;
-        return $this;
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_INT, true));
+    }
+
+    /**
+     * @param int $value
+     * @return $this
+     */
+    public function writeI64(int $value)
+    {
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_LONG, true));
+    }
+
+    /**
+     * @param float $value
+     * @return $this
+     */
+    public function writeF32(float $value)
+    {
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_FLOAT, true)->fixed(4));
+    }
+
+    /**
+     * @param float $value
+     * @return $this
+     */
+    public function writeF64(float $value)
+    {
+        return $this->writeBuffer(Buffer::from($value, Buffer::TYPE_FLOAT, true)->fixed(8));
     }
 
     /**
