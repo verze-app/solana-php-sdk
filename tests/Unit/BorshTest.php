@@ -3,9 +3,12 @@
 namespace Tighten\SolanaPhpSdk\Tests\Unit;
 
 use Tighten\SolanaPhpSdk\Borsh\Borsh;
+use Tighten\SolanaPhpSdk\Borsh\BorshObject;
 use Tighten\SolanaPhpSdk\Tests\TestCase;
 
 class Test {
+    use BorshObject;
+
     public $x;
     public $y;
     public $z;
@@ -13,8 +16,12 @@ class Test {
     public $b;
     public $c;
     public $q;
+    private $m;
 
     public function __construct() {}
+
+    public function setM($m) {$this->m = $m;}
+    public function getM() {return $this->m;}
 }
 
 class BorshTest extends TestCase
@@ -107,5 +114,27 @@ class BorshTest extends TestCase
 
         $this->assertEquals([5, 0, 0, 0, 104, 101, 108, 108, 111, 5, 0, 0, 0, 119, 111, 114, 108, 100], $buffer);
         $this->assertEquals(['hello', 'world'], $newValue->x);
+    }
+
+    /** @test */
+    public function it_serialize_deserialize_invisible_properties()
+    {
+        $value = new Test();
+        $value->setM(255);
+
+        $schema = [
+            Test::class => [
+                'kind' => 'struct',
+                'fields' => [
+                    ['m', 'u8'],
+                ],
+            ],
+        ];
+
+        $buffer = Borsh::serialize($schema, $value);
+        $newValue = Borsh::deserialize($schema, Test::class, $buffer);
+
+        $this->assertInstanceOf(Test::class, $newValue);
+        $this->assertEquals(255, $newValue->getM());
     }
 }
