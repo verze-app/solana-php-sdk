@@ -30,9 +30,15 @@ class BufferTest extends TestCase
         ];
 
         $bufferable = Buffer::from()
-            ->push(SystemProgram::PROGRAM_INDEX_CREATE_ACCOUNT, 4)
-            ->push($lamports, 8)
-            ->push($space, 8)
+            ->push(
+                Buffer::from(SystemProgram::PROGRAM_INDEX_CREATE_ACCOUNT,Buffer::TYPE_INT, false)
+            )
+            ->push(
+                Buffer::from($lamports,Buffer::TYPE_LONG, false)
+            )
+            ->push(
+                Buffer::from($space,Buffer::TYPE_LONG, false)
+            )
             ->push($programId)
         ;
 

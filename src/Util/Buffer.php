@@ -121,13 +121,9 @@ class Buffer implements Countable
      * @param $source
      * @return $this
      */
-    public function push($source, ?int $fixedSize = null): Buffer
+    public function push($source): Buffer
     {
         $sourceAsBuffer = Buffer::from($source);
-
-        if ($fixedSize != null) {
-            $sourceAsBuffer->fixed($fixedSize);
-        }
 
         array_push($this->data, ...$sourceAsBuffer->toArray());
 
