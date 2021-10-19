@@ -86,4 +86,26 @@ class BorshTest extends TestCase
         $newValue = Borsh::deserialize($schema, Test::class, $buffer);
         $this->assertNull($newValue->x);
     }
+
+    /** @test */
+    public function it_serialize_deserialize_fixed_array()
+    {
+        $schema = [
+            Test::class => [
+                'kind' => 'struct',
+                'fields' => [
+                    ['x', ['string', 2]],
+                ],
+            ],
+        ];
+
+        $value = new Test();
+        $value->x = ['hello', 'world'];
+
+        $buffer = Borsh::serialize($schema, $value);
+        $newValue = Borsh::deserialize($schema, Test::class, $buffer);
+
+        $this->assertEquals([5, 0, 0, 0, 104, 101, 108, 108, 111, 5, 0, 0, 0, 119, 111, 114, 108, 100], $buffer);
+        $this->assertEquals(['hello', 'world'], $newValue->x);
+    }
 }

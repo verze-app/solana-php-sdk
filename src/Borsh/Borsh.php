@@ -53,14 +53,14 @@ class Borsh
 
     /**
      * @param array $schema
-     * @param string $fieldName
+     * @param $fieldName
      * @param $value
      * @param $fieldType
      * @param BinaryWriter $writer
      */
     protected static function serializeField(
         array $schema,
-        string $fieldName,
+        $fieldName,
         $value,
         $fieldType,
         BinaryWriter $writer
@@ -152,13 +152,13 @@ class Borsh
 
     /**
      * @param array $schema
-     * @param string $fieldName
+     * @param $fieldName
      * @param $fieldType
      * @param BinaryReader $reader
      */
     protected static function deserializeField(
         array $schema,
-        string $fieldName,
+        $fieldName,
         $fieldType,
         BinaryReader $reader
     ) {
