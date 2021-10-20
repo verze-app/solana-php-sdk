@@ -19,33 +19,23 @@ composer require tightenco/solana-php-sdk
 
 ### Using the Solana simple client
 
-You can use the `Solana` class for convenient access to API methods. Some are defined in the code:
+You can use the `Connection` class for convenient access to API methods. Some are defined in the code:
 
 ```php
-use Tighten\SolanaPhpSdk\Solana;
+use Tighten\SolanaPhpSdk\Connection;
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
 
 // Using a defined method
-$sdk = new Solana(new SolanaRpcClient(SolanaRpcClient::MAINNET_ENDPOINT));
+$sdk = new Connection(new SolanaRpcClient(SolanaRpcClient::MAINNET_ENDPOINT));
 $accountInfo = $sdk->getAccountInfo('4fYNw3dojWmQ4dXtSGE9epjRGy9pFSx62YypT7avPYvA');
 var_dump($accountInfo);
-```
-
-Anything not defined in the code, you can call yourself, with only a few modifications to your code:
-
-```php
-use Tighten\SolanaPhpSdk\Solana;
-use Tighten\SolanaPhpSdk\SolanaRpcClient;
-
-// Using a not-defined method using the __call passthrough
-$response = $sdk->whateverMethodYouWantHere([$param1, $param2]);
 ```
 
 For all the possible methods, see the [API documentation](https://docs.solana.com/developing/clients/jsonrpc-api).
 
 ### Directly using the RPC client
 
-The `Solana` class is just a light convenience layer on top of the RPC client. You can, if you want, use the client directly, which allows you to work with the full `Response` object:
+The `Connection` class is just a light convenience layer on top of the RPC client. You can, if you want, use the client directly, which allows you to work with the full `Response` object:
 
 ```php
 use Tighten\SolanaPhpSdk\SolanaRpcClient;
