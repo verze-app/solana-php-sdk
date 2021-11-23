@@ -2,8 +2,8 @@
 
 namespace Tighten\SolanaPhpSdk;
 
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
 use Tighten\SolanaPhpSdk\Exceptions\GenericException;
 use Tighten\SolanaPhpSdk\Exceptions\InvalidIdResponseException;
 use Tighten\SolanaPhpSdk\Exceptions\MethodNotFoundException;
@@ -58,7 +58,7 @@ class SolanaRpcClient
      */
     public function call(string $method, array $params = [])
     {
-        $response = Http::acceptJson()->post(
+        $response = (new HttpFactory())->acceptJson()->post(
             $this->endpoint,
             $this->buildRpc($method, $params)
         )->throw();
