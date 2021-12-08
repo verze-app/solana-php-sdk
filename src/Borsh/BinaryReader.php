@@ -4,6 +4,7 @@ namespace Tighten\SolanaPhpSdk\Borsh;
 
 use Tighten\SolanaPhpSdk\Exceptions\TodoException;
 use Tighten\SolanaPhpSdk\Util\Buffer;
+use Tighten\SolanaPhpSdk\PublicKey;
 use Closure;
 
 class BinaryReader
@@ -140,6 +141,16 @@ class BinaryReader
     public function readFixedArray(int $length): array
     {
         return $this->readBuffer($length)->toArray();
+    }
+
+    public function readPubKey(): PublicKey
+    {
+        return new PublicKey($this->readFixedArray(32));
+    }
+
+    public function readPubKeyAsString(): string
+    {
+        return $this->readPubKey()->toBase58();
     }
 
     /**

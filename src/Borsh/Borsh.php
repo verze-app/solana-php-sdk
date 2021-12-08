@@ -166,7 +166,7 @@ class Borsh
         $fieldType,
         BinaryReader $reader
     ) {
-        if (is_string($fieldType)) {
+        if (is_string($fieldType) && ! class_exists($fieldType)) {
             return $reader->{'read' . ucfirst($fieldType)}();
         }
 
