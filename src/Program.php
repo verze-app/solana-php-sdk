@@ -14,7 +14,7 @@ class Program
         $this->client = $client;
     }
 
-    public function __call($method, $params = []): ?array
+    public function __call($method, $params = [])
     {
         return $this->client->call($method, ...$params);
     }
