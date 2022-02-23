@@ -30,8 +30,8 @@
         "php": "^7.4 || ~8.0",
         "ext-sodium": "*",
         "guzzlehttp/guzzle": "^7.3",
-        "illuminate/http": "~8.0",
-        "illuminate/support": "^8.0",
+        "illuminate/http": "~8.0 || ~9.0",
+        "illuminate/support": "^8.0 || ~9.0",
         "stephenhill/base58": "^1.1"
     },
     "require-dev": {
