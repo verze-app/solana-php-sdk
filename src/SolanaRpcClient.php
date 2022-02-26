@@ -39,13 +39,20 @@ class SolanaRpcClient
     protected $randomKey;
 
     /**
+     * @var \Illuminate\Http\Client\PendingRequest
+     */
+    protected $httpClient;
+
+    /**
      * @param string $endpoint
      * @throws \Exception
      */
-    public function __construct(string $endpoint)
+    public function __construct(string $endpoint, array $headers = [])
     {
         $this->endpoint = $endpoint;
         $this->randomKey = random_int(0, 99999999);
+
+        $this->httpClient = (new HttpFactory())->withHeaders($headers)->acceptJson();
     }
 
     /**
@@ -58,7 +65,7 @@ class SolanaRpcClient
      */
     public function call(string $method, array $params = [])
     {
-        $response = (new HttpFactory())->acceptJson()->post(
+        $response = $this->httpClient->post(
             $this->endpoint,
             $this->buildRpc($method, $params)
         )->throw();
