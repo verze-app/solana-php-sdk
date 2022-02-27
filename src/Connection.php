@@ -63,20 +63,20 @@ class Connection extends Program
 
     /**
      * @param Transaction $transaction
-     * @param Keypair $signer
+     * @param Keypair[] $signers
      * @param array $params
      * @return array|\Illuminate\Http\Client\Response
      * @throws Exceptions\GenericException
      * @throws Exceptions\InvalidIdResponseException
      * @throws Exceptions\MethodNotFoundException
      */
-    public function sendTransaction(Transaction $transaction, Keypair $signer, $params = [])
+    public function sendTransaction(Transaction $transaction, array $signers, array $params = [])
     {
         if (! $transaction->recentBlockhash) {
             $transaction->recentBlockhash = $this->getRecentBlockhash()['blockhash'];
         }
 
-        $transaction->sign($signer);
+        $transaction->sign(...$signers);
 
         $rawBinaryString = $transaction->serialize(false);
 
