@@ -51,14 +51,15 @@ class SolanaRpcClient
     /**
      * @param string $method
      * @param array $params
+     * @param array $headers
      * @return mixed
      * @throws GenericException
      * @throws InvalidIdResponseException
      * @throws MethodNotFoundException
      */
-    public function call(string $method, array $params = [])
+    public function call(string $method, array $params = [], array $headers = [])
     {
-        $response = (new HttpFactory())->acceptJson()->post(
+        $response = (new HttpFactory())->acceptJson()->withHeaders($headers)->post(
             $this->endpoint,
             $this->buildRpc($method, $params)
         )->throw();
