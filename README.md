@@ -3,7 +3,11 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/tightenco/solana-php-sdk.svg?style=flat-square)](https://packagist.org/packages/tightenco/solana-php-sdk)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/tighten/solana-php-sdk/run-tests?label=tests)](https://github.com/tighten/solana-php-sdk/actions?query=workflow%3Arun-tests+branch%3Amain)
 
-> :warning: This is an alpha release; functionality may change.
+---
+
+:warning: **This project is not being actively maintained.** Use at your own risk. Please feel free to open an issue if you'd like to take it over.
+
+---
 
 Simple PHP SDK for Solana.
 
