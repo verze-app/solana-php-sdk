@@ -5,7 +5,7 @@
 
 ---
 
-:warning: **This project is not being actively maintained.** Use at your own risk. Please feel free to open an issue if you'd like to take it over.
+:warning: **This project is not being actively maintained.** Use at your own risk. Please feel free to open an issue if you'd like to take it over. Tighten will *not* provide any support for this package as it exists right now; please don't email us expecting any support.
 
 ---
 
