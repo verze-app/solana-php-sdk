@@ -1,0 +1,30 @@
+name: Run tests
+on:
+    pull_request:
+    push:
+        branches: [main]
+jobs:
+    test:
+        name: PHP ${{ matrix.php }}
+        runs-on: ubuntu-latest
+        continue-on-error: ${{ matrix.experimental }}
+        strategy:
+            fail-fast: false
+            matrix:
+                php: ['7.4', '8.0']
+                experimental: [false]
+                include:
+                    - php: '8.1'
+                      experimental: true
+        steps:
+            - uses: actions/checkout@v2
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php }}
+            - uses: actions/cache@v2
+              with:
+                  path: ~/.composer/cache/files
+                  key: php${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: php${{ matrix.php }}-
+            - run: composer install --prefer-dist --optimize-autoloader --no-interaction --no-progress
+            - run: vendor/bin/phpunit --testdox
