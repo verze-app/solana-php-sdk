@@ -1,7 +1,7 @@
 # Solana PHP SDK
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/tightenco/solana-php-sdk.svg?style=flat-square)](https://packagist.org/packages/tightenco/solana-php-sdk)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/verze-app/solana-php-sdk/run-tests?label=tests)](https://github.com/verze-app/solana-php-sdk/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Tests Action Status](https://github.com/verze-app/solana-php-sdk/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/verze-app/solana-php-sdk/actions?query=workflow%3Arun-tests+branch%3Amain)
 
 ---
 
