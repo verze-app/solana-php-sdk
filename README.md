@@ -1,13 +1,11 @@
-![DEPRECATED](deprecated.png)
-
 # Solana PHP SDK
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/tightenco/solana-php-sdk.svg?style=flat-square)](https://packagist.org/packages/tightenco/solana-php-sdk)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/tighten/solana-php-sdk/run-tests?label=tests)](https://github.com/tighten/solana-php-sdk/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/verze-app/solana-php-sdk/run-tests?label=tests)](https://github.com/verze-app/solana-php-sdk/actions?query=workflow%3Arun-tests+branch%3Amain)
 
 ---
 
-:warning: **This project is not being actively maintained.** Use at your own risk. Please feel free to open an issue if you'd like to take it over. Tighten will *not* provide any support for this package as it exists right now; please don't email us expecting any support.
+:warning: **This project moved maintainers and will be actively worked on again.** Use at your own risk. Verze will *not* provide any support for this package as it exists right now; please don't email us expecting any support.
 
 ---
 
@@ -102,8 +100,8 @@ If you discover any security related issues, please email hello@tighten.co inste
 
 ## Credits
 
-- [Matt Stauffer](https://github.com/mattstauffer)
-- [Zach Vander Velden](https://github.com/exzachlyvv)
+- [Matt Stauffer](https://github.com/mattstauffer) (Original creator)
+- [Zach Vander Velden](https://github.com/exzachlyvv) (Metadata wizard)
 - [All Contributors](../../contributors)
 
 ## License
