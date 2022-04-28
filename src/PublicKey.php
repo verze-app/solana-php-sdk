@@ -3,7 +3,7 @@
 namespace Tighten\SolanaPhpSdk;
 
 use ParagonIE_Sodium_Compat;
-use SodiumException;
+use RangeException;
 use StephenHill\Base58;
 use Tighten\SolanaPhpSdk\Exceptions\BaseSolanaPhpSdkException;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
@@ -199,7 +199,7 @@ class PublicKey implements HasPublicKey
             $_ = ParagonIE_Sodium_Compat::crypto_sign_ed25519_pk_to_curve25519($binaryString);
 
             return true;
-        } catch (SodiumException $exception) {
+        } catch (RangeException $exception) {
             return false;
         }
     }
