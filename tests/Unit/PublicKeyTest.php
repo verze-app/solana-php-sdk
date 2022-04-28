@@ -135,5 +135,11 @@ class PublicKeyTest extends TestCase
         // for curve25519 point decompression :/
         $offCurve = new PublicKey('12rqwuEgBYiGhBrDJStCiqEtzQpTTiZbh7teNVLuYcFA');
         $this->assertFalse(PublicKey::isOnCurve($offCurve));
+
+        /**
+         * @see https://github.com/verze-app/solana-php-sdk/issues/31
+         */
+        $onCurve = new PublicKey('q5xfHVuAsGmKRTmJNshERHHkVnHKxRX3cKzz5cYnFRn');
+        $this->assertTrue(PublicKey::isOnCurve($onCurve));
     }
 }
