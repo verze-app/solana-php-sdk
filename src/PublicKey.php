@@ -2,7 +2,8 @@
 
 namespace Tighten\SolanaPhpSdk;
 
-use SodiumException;
+use ParagonIE_Sodium_Compat;
+use RangeException;
 use StephenHill\Base58;
 use Tighten\SolanaPhpSdk\Exceptions\BaseSolanaPhpSdkException;
 use Tighten\SolanaPhpSdk\Exceptions\InputValidationException;
@@ -191,9 +192,14 @@ class PublicKey implements HasPublicKey
                 ? $publicKey->toBinaryString()
                 : $publicKey;
 
-            $_ = sodium_crypto_sign_ed25519_pk_to_curve25519($binaryString);
+            /**
+             * Sodium extension method sometimes returns "conversion failed" exception.
+             * $_ = sodium_crypto_sign_ed25519_pk_to_curve25519($binaryString);
+             */
+            $_ = ParagonIE_Sodium_Compat::crypto_sign_ed25519_pk_to_curve25519($binaryString);
+
             return true;
-        } catch (SodiumException $exception) {
+        } catch (RangeException $exception) {
             return false;
         }
     }
