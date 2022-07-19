@@ -33,7 +33,7 @@ class Connection extends Program
 
     /**
      * @param string $transactionSignature
-     * @return array
+     * @return array|null
      */
     public function getConfirmedTransaction(string $transactionSignature): array
     {
@@ -44,7 +44,7 @@ class Connection extends Program
      * NEW: This method is only available in solana-core v1.7 or newer. Please use getConfirmedTransaction for solana-core v1.6
      *
      * @param string $transactionSignature
-     * @return array
+     * @return array|null
      */
     public function getTransaction(string $transactionSignature): array
     {
