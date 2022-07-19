@@ -35,7 +35,7 @@ class Connection extends Program
      * @param string $transactionSignature
      * @return array|null
      */
-    public function getConfirmedTransaction(string $transactionSignature): array
+    public function getConfirmedTransaction(string $transactionSignature): array|null
     {
         return $this->client->call('getConfirmedTransaction', [$transactionSignature]);
     }
@@ -56,7 +56,7 @@ class Connection extends Program
      * @return array
      * @throws Exceptions\GenericException|Exceptions\MethodNotFoundException|Exceptions\InvalidIdResponseException
      */
-    public function getRecentBlockhash(?Commitment $commitment = null): array
+    public function getRecentBlockhash(?Commitment $commitment = null): array|null
     {
         return $this->client->call('getRecentBlockhash', array_filter([$commitment]))['value'];
     }
