@@ -11,7 +11,9 @@ class Metadata
 
     public const SCHEMA = [
         Creator::class => Creator::SCHEMA[Creator::class],
+        Collection::class => Collection::SCHEMA[Collection::class],
         MetadataData::class => MetadataData::SCHEMA[MetadataData::class],
+        Uses::class => Uses::SCHEMA[Uses::class],
         self::class => [
             'kind' => 'struct',
             'fields' => [
@@ -21,6 +23,22 @@ class Metadata
                 ['data', MetadataData::class],
                 ['primarySaleHappened', 'u8'], // bool
                 ['isMutable', 'u8'], // bool
+                ['editionNonce', [
+                    'kind' => 'option',
+                    'type' => 'u8'
+                ]],
+                ['tokenStandard', [
+                    'kind' => 'option',
+                    'type' => 'u8'
+                ]],
+                ['collection', [
+                    'kind' => 'option',
+                    'type' => Collection::class
+                ]],
+                ['uses', [
+                    'kind' => 'option',
+                    'type' => Uses::class
+                ]],
             ],
         ],
     ];
