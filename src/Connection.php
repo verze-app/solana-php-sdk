@@ -90,4 +90,32 @@ class Connection extends Program
         
         return $this->client->call('sendTransaction', [$hashString, $send_params]);
     }
+    
+    
+    /**
+	 * @param Transaction $transaction
+	 * @param Keypair[] $signers
+	 * @param array $params
+	 * @return array|\Illuminate\Http\Client\Response
+	 * @throws Exceptions\GenericException
+	 * @throws Exceptions\InvalidIdResponseException
+	 * @throws Exceptions\MethodNotFoundException
+	 */
+	public function simulateTransaction(Transaction $transaction, array $signers, array $params = [])
+	{
+		$transaction->sign(...$signers);
+		
+		$rawBinaryString = $transaction->serialize(false);
+		
+		$hashString = sodium_bin2base64($rawBinaryString, SODIUM_BASE64_VARIANT_ORIGINAL);
+		
+		$send_params = ['encoding' => 'base64', 'commitment' => 'confirmed', 'sigVerify'=>true];
+		if (!is_array($params))
+			$params = [];
+		foreach ($params as $k=>$v)
+			$send_params[$k] = $v;
+		
+		return $this->client->call('simulateTransaction', [$hashString, $send_params]);
+	}
+    
 }
