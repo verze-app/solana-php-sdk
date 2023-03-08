@@ -1,0 +1,10 @@
+version : '2'
+
+services:
+  composer:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: test
+    volumes:
+      - ./:/app
