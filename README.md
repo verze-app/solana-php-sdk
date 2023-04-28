@@ -5,7 +5,7 @@
 
 ---
 
-:warning: **This project moved maintainers and will be actively worked on again. See [discussion for details](https://github.com/verze-app/solana-php-sdk/discussions/36)** Use at your own risk. Verze will *not* provide any support for this package as it exists right now; please don't email us expecting any support.
+:warning: **As of May 2023, this package is up for adoption again! Feel free to ping https://github.com/neverything. Sadly we never got around to accomplish what we wanted at Verze, so we no longer work on the project and therefore this package is looking for new hands to work on it. Use at your own risk. Verze will *not* provide any support for this package as it exists right now; please don't email us expecting any support.
 
 ---
 
