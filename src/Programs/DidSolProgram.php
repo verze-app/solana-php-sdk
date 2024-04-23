@@ -30,14 +30,14 @@ class DidSolProgram extends Program
      * getDidDataAcccountInfo
      *
      * @param SolanaRpcClient $client
-     * @param string $did The Decentralized Identifier
+     * @param string $base58SubjectPk The PK of the DID.
      * @param bool $onlyAccData
      * @return DidData|string
      * @example DidSolProgram::getDidDataAcccountInfo($client, 'did:sol:3Js7k6xYQbvXv6qUYLapYV7Sptfg37Tss9GcAyVEuUqk', false);
      */
-    static function getDidDataAcccountInfo($client, $did, $onlyAccData = true)
+    static function getDidDataAcccountInfo($client, $base58SubjectPk, $onlyAccData = true)
     {
-        $pdaPublicKey =  self::getDidDataAccountId($did);
+        $pdaPublicKey =  self::getDidDataAccountId($base58SubjectPk);
 
         $accountInfoResponse = $client->call('getAccountInfo', [$pdaPublicKey, ["encoding" => "jsonParsed"]]);
         $dataBase64 = $accountInfoResponse['value']['data'][0];
@@ -56,16 +56,16 @@ class DidSolProgram extends Program
     /**
      * getDidDataAccountId
      *
-     * @param string $did 'did:sol:....'
-     * @return string The account ID of the DID data account in base58 string format
-     * @example DidSolProgram::getDidDataAccountId('did:sol:3Js7k6xYQbvXv6qUYLapYV7Sptfg37Tss9GcAyVEuUqk');
+     * @param string $did 'did:sol:[cluster]....'
+     * @return string The base58 encoded public key of the DID data account
+     * @example DidSolProgram::getDidDataAccountId('did:sol:devnet:3Js7k6xYQbvXv6qUYLapYV7Sptfg37Tss9GcAyVEuUqk');
      */
-    static function getDidDataAccountId($did)
+    static function getDidDataAccountId($base58SubjectPk)
     {
 
         $b58 = new Base58();
 
-        $seeds = array(self::DIDSOL_DEFAULT_SEED, $b58->decode(substr($did, 8)));
+        $seeds = array(self::DIDSOL_DEFAULT_SEED, $b58->decode($base58SubjectPk));
         $pId = new PublicKey(self::DIDSOL_PROGRAM_ID);
         $publicKey =  PublicKey::findProgramAddress($seeds, $pId);
 
