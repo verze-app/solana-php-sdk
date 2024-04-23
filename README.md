@@ -52,7 +52,7 @@ $accountInfoStatusCode = $accountInfoResponse->getStatusCode();
 
 ### Transactions
 
-Here is working example of sending a transfer instruction to the Solana blockchain:
+Here is working example of sending a transfer instruction to the Solana blockchain, you may overrride the Endpoint with a custom RPC endpoint.:
 
 ```php
 $client = new SolanaRpcClient(SolanaRpcClient::DEVNET_ENDPOINT);
@@ -69,6 +69,46 @@ $transaction = new Transaction(null, null, $fromPublicKey->getPublicKey());
 $transaction->add($instruction);
 
 $txHash = $connection->sendTransaction($transaction, $fromPublicKey);
+```
+
+### Borsh Derialize & Deserialize
+
+For Borsh serialization/deseralization to work, a class::SCHEMA object reflecting the Program Structs, based on the program IDL must be passed or defined. e.g.
+
+```php
+class DidData
+{
+
+    use BorshDeserializable;
+
+
+    public const SCHEMA = [
+        VerificationMethodStruct::class => VerificationMethodStruct::SCHEMA[VerificationMethodStruct::class],
+        ServiceStruct::class => ServiceStruct::SCHEMA[ServiceStruct::class],
+        self::class => [
+            'kind' => 'struct',
+            'fields' => [
+                ['offset', 'u64'],
+                ['version', 'u8'],
+                ['bump', 'u8'],
+                ['nonce', 'u64'],
+                ['initialVerificationMethod', 'string'],
+                ['flags', 'u16'],
+                ['methodType', 'u8'],
+                ['keyData', ['u8']],
+                ['verificationMethods', [VerificationMethodStruct::class]],
+                ['services', [ServiceStruct::class]],
+                ['nativeControllers', ['pubKey']],
+                ['otherControllers', ['string']],
+            ],
+        ],
+    ];
+
+    public static function fromBuffer(array $buffer): self
+    {
+        return Borsh::deserialize(self::SCHEMA, self::class, $buffer);
+    }
+}
 ```
 
 Note: This project is in alpha, the code to generate instructions is still being worked on `$instruction = SystemProgram::abc()`
