@@ -4,6 +4,7 @@
 [![GitHub Tests Action Status](https://github.com/verze-app/solana-php-sdk/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/verze-app/solana-php-sdk/actions?query=workflow%3Arun-tests+branch%3Amain)
 
 ---
+:information_source: **As of May 2024, we archived this repo.** Please check out the alternative (based on a fork) https://github.com/Attestto-com/solana-php-sdk.
 
 :warning: **As of May 2023, this package is up for adoption again!** Feel free to ping https://github.com/neverything. Sadly we never got around to accomplish what we wanted at Verze, so we no longer work on the project and therefore this package is looking for new hands to work on it. Use at your own risk. Verze will *not* provide any support for this package as it exists right now; please don't email us expecting any support.
 
